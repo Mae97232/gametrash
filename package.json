@@ -4,14 +4,13 @@
     "description": "Serveur pour gérer l'inscription et l'envoi d'email",
     "main": "server.js",
     "scripts": {
-      "start": "node server.js"
+        "start": "node server.js"
     },
     "dependencies": {
-      "body-parser": "^1.20.3",
-      "cors": "^2.8.5",
-      "express": "^4.21.2",
-      "nodemailer": "^6.10.1",
-      "dotenv": "^16.3.1"
+        "body-parser": "^1.20.3",
+        "cors": "^2.8.5",
+        "dotenv": "^16.3.1",
+        "express": "^4.21.2",
+        "nodemailer": "^6.10.1"
     }
-  }
-  
+}
