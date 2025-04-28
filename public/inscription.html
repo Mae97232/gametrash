@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Inscription complète</title>
+  <link rel="stylesheet" href="design/style.css">
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+  <form id="form-inscription">
+    <h2>Créer un compte client</h2>
+
+    <input type="text" id="nom" placeholder="Nom" required>
+    <input type="text" id="prénom" placeholder="Prénom" required>
+    <input type="email" id="email" placeholder="Adresse e-mail" required>
+    <input type="password" id="password" placeholder="Mot de passe" required>
+    <input type="password" id="confirm-password" placeholder="Confirmer le mot de passe" required>
+    <input type="text" id="telephone" placeholder="Téléphone" required>
+    <input type="text" id="adresse" placeholder="Adresse" required>
+    <input type="text" id="ville" placeholder="Ville" required>
+    <input type="text" id="codePostal" placeholder="Code Postal" required>
+    <input type="date" id="naissance" required>
+
+    <button type="submit">S'inscrire</button>
+    <div class="message" id="message"></div>
+  </form>
+
+  <script>
+    const form = document.getElementById('form-inscription');
+    const message = document.getElementById('message');
+    
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+    
+      const nom = document.getElementById('nom').value.trim();
+      const prénom = document.getElementById('prénom').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirm-password').value;
+      const telephone = document.getElementById('telephone').value.trim();
+      const adresse = document.getElementById('adresse').value.trim();
+      const ville = document.getElementById('ville').value.trim();
+      const codePostal = document.getElementById('codePostal').value.trim();
+      const naissance = document.getElementById('naissance').value;
+    
+      if (!nom || !prénom || !email || !password || !confirmPassword || !telephone || !adresse || !ville || !codePostal || !naissance) {
+        message.textContent = "Veuillez remplir tous les champs.";
+        message.style.color = "red";
+        return;
+      }
+    
+      if (password !== confirmPassword) {
+        message.textContent = "Les mots de passe ne correspondent pas.";
+        message.style.color = "red";
+        return;
+      }
+    
+      const utilisateur = {
+        nom,
+        prénom,
+        email,
+        password,
+        telephone,
+        adresse,
+        ville,
+        codePostal,
+        naissance
+      };
+    
+      localStorage.setItem('utilisateurConnecte', JSON.stringify(utilisateur));
+    
+      Promise.all([
+        // ⚡ Réveil du serveur Render
+        fetch('https://mon-backend-inscription-2.onrender.com/')
+          .then(() => console.log('🚀 Serveur Render réveillé'))
+          .catch(err => console.warn('⚠️ Erreur pour réveiller Render', err))
+      ])
+      .then(() => {
+        // Ensuite on envoie l'email
+        return fetch('https://mon-backend-inscription-2.onrender.com/send-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            to: email,
+            subject: "Bienvenue chez GameTrash 🎮",
+            html: `
+              <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f7f7f7;">
+                <h2 style="color: #333;">Bienvenue ${prénom} ${nom} !</h2>
+                <p>Merci pour votre inscription chez <strong>GameTrash</strong> 🎮.</p>
+                <h3>Voici vos informations :</h3>
+                <ul>
+                  <li><strong>Téléphone :</strong> ${telephone}</li>
+                  <li><strong>Adresse :</strong> ${adresse}, ${ville}, ${codePostal}</li>
+                  <li><strong>Date de naissance :</strong> ${naissance}</li>
+                </ul>
+                <p style="margin-top:20px;">Nous avons hâte de vous faire découvrir nos meilleurs jeux rétro !</p>
+                <p>À très vite,<br><strong>L'équipe GameTrash</strong> 🎮</p>
+              </div>
+            `
+          })
+        });
+      })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(error => { throw new Error(error.error || 'Erreur inconnue'); });
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('✅ Email de bienvenue envoyé :', data);
+        alert('Inscription réussie ! Un email de bienvenue vous a été envoyé.');
+        message.style.color = "green";
+    
+        setTimeout(() => {
+          window.location.href = '/espace-mon-client.html';
+        }, 2000);
+      })
+      .catch(error => {
+        console.error('🚨 Erreur lors de l\'envoi de l\'email :', error);
+        alert('Inscription réussie, mais l\'email n\'a pas pu être envoyé : ' + error.message);
+        message.textContent = "Inscription réussie, mais l'email n'a pas pu être envoyé.";
+        message.style.color = "orange";
+    
+        setTimeout(() => {
+          window.location.href = '/espace-mon-client.html';
+        }, 2000);
+      });
+    });
+    </script>
+
+</body>
+</html>

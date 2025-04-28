@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GameBoy Violet</title>
+  <link rel="stylesheet" href="design/style.css" />
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
+</head>
+<body>
+
+  <!-- ✅ NAVIGATION + MENU BURGER -->
+  <nav class="navbar">
+    <div class="logo">Game Trash</div>
+    <div class="menu-burger" onclick="toggleMenu(this)">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+    </div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="produit.html">GameBoy Noir</a></li>
+      <li><a href="produit2.html">GameBoy Rouge</a></li>
+      <li><a href="produit3.html">GameBoy Orange</a></li>
+      <li><a href="produit4.html">GameBoy Violet</a></li>
+      <li><a href="panier.html">🛒 Panier <span id="panierCount">(0)</span></a></li>
+    </ul>
+  </nav>
+
+  <!-- ✅ Titre de page -->
+  <h1 class="titre-page">GameBoy Violet</h1>
+
+  <!-- ✅ Produit -->
+  <div class="produit">
+    <img src="images/Gameboy-purple.webp" alt="GameBoy Violet">
+    <h2>GameBoy Violet</h2>
+    <p class="description">
+      Redécouvrez la légende ! 🎮  
+      Cette GameBoy classique remise à neuf vous replonge dans l’âge d’or du rétro-gaming. Compacte, robuste et 100% fonctionnelle – idéale pour les passionnés et les collectionneurs !
+    </p>
+    <p class="prix">89€</p>
+    <button class="btn-achat">Acheter</button>
+    <button class="btn-achat" onclick="ajouterAuPanier('GameBoy Violet', 89, 'images/Gameboy-purple.webp')">Ajouter au panier</button>
+  </div>
+
+  <!-- ✅ Section Avis -->
+  <section class="avis-section">
+    <h2>Laissez votre avis</h2>
+    <form id="avisForm">
+      <input type="text" id="nom" placeholder="Votre nom" required>
+      <textarea id="message" placeholder="Votre message" required></textarea>
+      
+      <div class="note">
+        <label for="note">Note :</label>
+        <select id="note" required>
+          <option value="5">⭐⭐⭐⭐⭐</option>
+          <option value="4">⭐⭐⭐⭐</option>
+          <option value="3">⭐⭐⭐</option>
+          <option value="2">⭐⭐</option>
+          <option value="1">⭐</option>
+        </select>
+      </div>
+      <button type="submit">Envoyer</button>
+    </form>
+
+    <div id="listeAvis">
+      <h3>Avis des clients</h3>
+    </div>
+  </section>
+
+  <!-- ✅ Footer -->
+  <footer>
+    <div id="flexbox-foot">
+      <div id="logo-foot">
+        <img src="images/game2.png" alt="Logo" />
+        <span class="footer-logo-text">Game Trash</span>
+      </div>
+
+      <div class="footer-links">
+        <ul>
+          <li><a href="a-propos.html">À propos</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2025 Game Trash. Tous droits réservés.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ✅ Scripts -->
+  <script>
+    function toggleMenu(burger) {
+      burger.classList.toggle("active");
+      document.getElementById("navLinks").classList.toggle("show");
+    }
+
+    function mettreAJourCompteurPanier() {
+      const panier = JSON.parse(localStorage.getItem("panier")) || [];
+      const totalArticles = panier.reduce((acc, item) => acc + item.quantite, 0);
+      const compteur = document.getElementById("panierCount");
+      if (compteur) compteur.textContent = `(${totalArticles})`;
+    }
+
+    mettreAJourCompteurPanier();
+
+    const form = document.getElementById("avisForm");
+    const listeAvis = document.getElementById("listeAvis");
+    let avisArray = [];
+
+    form?.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const nom = document.getElementById("nom").value;
+      const message = document.getElementById("message").value;
+      const note = parseInt(document.getElementById("note").value);
+
+      const avis = {
+        nom: nom,
+        message: message,
+        note: note,
+        date: new Date()
+      };
+
+      avisArray.unshift(avis);
+      afficherAvis();
+      form.reset();
+    });
+
+    function afficherAvis() {
+      const avisHtml = avisArray.map(avis => {
+        const etoiles = "⭐".repeat(avis.note);
+        return `
+          <div class="avis">
+            <strong>${avis.nom}</strong>
+            <p>${avis.message}</p>
+            <p>${etoiles}</p>
+          </div>
+        `;
+      }).join("");
+
+      listeAvis.innerHTML = "<h3>Avis des clients</h3>" + avisHtml;
+    }
+
+    function ajouterAuPanier(nom, prix, image) {
+      let panier = JSON.parse(localStorage.getItem("panier")) || [];
+      const produitExistant = panier.find(item => item.nom === nom);
+
+      if (produitExistant) {
+        produitExistant.quantite++;
+      } else {
+        panier.push({
+          nom: nom,
+          prix: prix,
+          image: image,
+          quantite: 1
+        });
+      }
+
+      localStorage.setItem("panier", JSON.stringify(panier));
+      alert("Produit ajouté au panier !");
+      mettreAJourCompteurPanier();
+    }
+
+    function afficherPanier() {
+      const panierContainer = document.getElementById("panierContainer");
+      panierContainer.innerHTML = "";
+
+      if (panier.length === 0) {
+        panierContainer.innerHTML = "<p>Votre panier est vide.</p>";
+        return;
+      }
+
+      panier.forEach(item => {
+        const div = document.createElement("div");
+        div.classList.add("panier-item");
+        div.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+            <img src="${item.image}" alt="${item.nom}" style="width: 100px; border-radius: 8px;">
+            <div>
+              <p><strong>${item.nom}</strong></p>
+              <p>${item.prix}€ x ${item.quantite}</p>
+            </div>
+          </div>
+        `;
+        panierContainer.appendChild(div);
+      });
+
+      const total = panier.reduce((sum, item) => sum + item.prix * item.quantite, 0);
+      const totalDiv = document.createElement("div");
+      totalDiv.innerHTML = `<p><strong>Total : ${total}€</strong></p>`;
+      panierContainer.appendChild(totalDiv);
+    }
+  </script>
+</body>
+</html>
