@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GameBoy Black</title>
+  <link rel="stylesheet" href="design/style.css">
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon"/>
+</head>
+<body>
+
+  <!-- ✅ NAVIGATION + MENU BURGER -->
+  <nav class="navbar">
+    <div class="logo">Game Trash</div>
+    <div class="menu-burger" onclick="toggleMenu(this)">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+    </div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="produit.html">GameBoy Noir</a></li>
+      <li><a href="produit2.html">GameBoy Rouge</a></li>
+      <li><a href="produit3.html">GameBoy Orange</a></li>
+      <li><a href="produit4.html">GameBoy Violet</a></li>
+      <li><a href="panier.html">🛒 Panier <span id="panierCount">(0)</span></a></li>
+    </ul>
+  </nav>
+
+  <!-- ✅ Titre de page -->
+  <h1 class="titre-page">GameBoy Black</h1>
+
+  <!-- ✅ Produit -->
+  <div class="produit">
+    <img src="images/Gameboy-black.jpg" alt="GameBoy black">
+    <h2>GameBoy Noire</h2>
+    <p class="description">
+      Redécouvrez la légende ! 🎮  
+      Cette GameBoy classique remise à neuf vous replonge dans l’âge d’or du rétro-gaming. Compacte, robuste et 100% fonctionnelle – idéale pour les passionnés et les collectionneurs !
+    </p>
+    <p class="prix">89€</p>
+    <button class="btn-achat">Acheter</button>
+    <button class="btn-achat" onclick="ajouterAuPanier('GameBoy Noire', 89, 'images/Gameboy-black.jpg')">Ajouter au panier</button>
+  </div>
+
+  <!-- ✅ Section Avis -->
+  <section class="avis-section">
+    <h2>Laissez votre avis</h2>
+    <form id="avisForm">
+      <input type="text" id="nom" placeholder="Votre nom" required>
+      <textarea id="message" placeholder="Votre message" required></textarea>
+      <div class="note">
+        <label for="note">Note :</label>
+        <select id="note" required>
+          <option value="5">⭐⭐⭐⭐⭐</option>
+          <option value="4">⭐⭐⭐⭐</option>
+          <option value="3">⭐⭐⭐</option>
+          <option value="2">⭐⭐</option>
+          <option value="1">⭐</option>
+        </select>
+      </div>
+      <button type="submit">Envoyer</button>
+    </form>
+
+    <div id="listeAvis">
+      <h3>Avis des clients</h3>
+      <!-- Les avis s’afficheront ici -->
+    </div>
+  </section>
+
+  <!-- ✅ Pied de page -->
+  <footer>
+    <div id="flexbox-foot">
+      <div id="logo-foot">
+        <img src="images/game2.png" alt="Logo">
+        <span class="footer-logo-text">Game Trash</span>
+      </div>
+      <div class="footer-links">
+        <ul>
+          <li><a href="a-propos.html">À propos</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 Game Trash. Tous droits réservés.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ✅ Scripts -->
+  <script>
+    // MENU BURGER
+    function toggleMenu(burger) {
+      burger.classList.toggle("active");
+      document.getElementById("navLinks").classList.toggle("show");
+    }
+
+    // COMPTEUR PANIER
+    function mettreAJourCompteurPanier() {
+      const panier = JSON.parse(localStorage.getItem("panier")) || [];
+      const total = panier.reduce((acc, item) => acc + item.quantite, 0);
+      const compteur = document.getElementById("panierCount");
+      if (compteur) compteur.textContent = `(${total})`;
+    }
+
+    mettreAJourCompteurPanier();
+
+    // FORMULAIRE AVIS
+    const form = document.getElementById("avisForm");
+    const listeAvis = document.getElementById("listeAvis");
+    let avisArray = [];
+
+    form?.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const nom = document.getElementById("nom").value;
+      const message = document.getElementById("message").value;
+      const note = parseInt(document.getElementById("note").value);
+
+      const avis = { nom, message, note, date: new Date() };
+      avisArray.unshift(avis);
+      afficherAvis();
+      form.reset();
+    });
+
+    function afficherAvis() {
+      const avisHtml = avisArray.map(avis => {
+        const etoiles = "⭐".repeat(avis.note);
+        return `
+          <div class="avis">
+            <strong>${avis.nom}</strong>
+            <p>${avis.message}</p>
+            <p>${etoiles}</p>
+          </div>
+        `;
+      }).join("");
+
+      listeAvis.innerHTML = "<h3>Avis des clients</h3>" + avisHtml;
+    }
+
+    // AJOUTER AU PANIER
+    function ajouterAuPanier(nom, prix, image) {
+      let panier = JSON.parse(localStorage.getItem("panier")) || [];
+      const produitExistant = panier.find(item => item.nom === nom);
+
+      if (produitExistant) {
+        produitExistant.quantite++;
+      } else {
+        panier.push({ nom, prix, image, quantite: 1 });
+      }
+
+      localStorage.setItem("panier", JSON.stringify(panier));
+      mettreAJourCompteurPanier();
+      alert("Produit ajouté au panier !");
+    }
+  </script>
+</body>
+</html>
+

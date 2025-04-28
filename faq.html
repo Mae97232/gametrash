@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ - Game Trash</title>
+  <link rel="icon" href="Images/favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="design/style.css">
+</head>
+<body>
+
+  <!-- ✅ Navigation (identique à tes autres pages) -->
+  <nav class="navbar">
+    <div class="logo">Game Trash</div>
+    <div class="burger" onclick="toggleMenu(this)">
+      <div class="line1"></div>
+      <div class="line2"></div>
+      <div class="line3"></div>
+    </div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="produit.html">Produits</a></li>
+      <li><a href="a-propos.html">À propos</a></li>
+      <li><a href="faq.html">FAQ</a></li>
+    </ul>
+  </nav>
+
+  <!-- ✅ Contenu FAQ -->
+  <main class="faq-section">
+    <h1>Foire Aux Questions (FAQ)</h1>
+
+    <div class="faq">
+      <h3>🔹 Vos consoles sont-elles reconditionnées ?</h3>
+      <p>Oui, toutes nos Game Boys sont remises à neuf, nettoyées, testées, et prêtes à l'emploi.</p>
+    </div>
+
+    <div class="faq">
+      <h3>🔹 Quels moyens de paiement acceptez-vous ?</h3>
+      <p>Nous acceptons les paiements par carte bancaire, PayPal et Apple Pay.</p>
+    </div>
+
+    <div class="faq">
+      <h3>🔹 Y a-t-il une garantie sur les produits ?</h3>
+      <p>Oui, chaque produit est couvert par une garantie de 6 mois.</p>
+    </div>
+
+    <div class="faq">
+      <h3>🔹 Puis-je retourner un produit ?</h3>
+      <p>Les retours sont acceptés sous 14 jours après réception, si l’article est en bon état.</p>
+    </div>
+  </main>
+
+  <!-- ✅ Footer -->
+  <footer>
+    <div id="flexbox-foot">
+      <div id="logo-foot">
+        <img src="Images/game2.png" alt="Logo">
+        <span class="footer-logo-text">Game trash</span>
+      </div>
+      <div class="footer-links">
+        <ul>
+          <li><a href="a-propos.html">À propos</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 Game trash. Tous droits réservés.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ✅ Script pour le menu burger -->
+  <script>
+    function toggleMenu(element) {
+      element.classList.toggle("active");
+      document.getElementById("navLinks").classList.toggle("active");
+    }
+  </script>
+</body>
+</html>
