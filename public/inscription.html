@@ -78,6 +78,10 @@
           .catch(err => console.warn('⚠️ Erreur pour réveiller Render', err))
       ])
       .then(() => {
+        // 💤 Pause de 2 secondes pour laisser le serveur bien se réveiller
+        return new Promise(resolve => setTimeout(resolve, 2000));
+      })
+      .then(() => {
         // Ensuite on envoie l'email
         return fetch('https://gametrash.onrender.com/send-email', {
           method: 'POST',
