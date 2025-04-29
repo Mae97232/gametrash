@@ -9,29 +9,15 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body>
-  <header>
-    <nav>
-      <a href="index.html">Accueil</a>
-      <a href="produits.html">Produits</a>
-      <a href="contact.html">Contact</a>
-      <a href="espace-mon-client.html">👤</a>
-    </nav>
-  </header>
 
-  <div class="menu-burger" onclick="toggleMenu(this)">
-    <div class="bar"></div>
-    <div class="bar"></div>
-    <div class="bar"></div>
- </div>
- <ul class="nav-links" id="navLinks">
-    <li><a href="index.html">Accueil</a></li>
-    <li><a href="produit.html">GameBoy Noir</a></li>
-    <li><a href="produit2.html">GameBoy Rouge</a></li>
-    <li><a href="produit3.html">GameBoy Orange</a></li>
-    <li><a href="produit4.html">GameBoy Violet</a></li>
-    <li><a href="panier.html">🛒 Panier <span id="panierCount">(0)</span></a></li>
-  </ul>
-</nav>
+  <nav class="navbar">
+    <a href="index.html" class="logo">Game Trash</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="espace-mon-client.html"><i class="fas fa-user"></i> Espace client</a></li>
+      <li><a href="panier.html">🛒 Panier</a></li>
+    </ul>
+  </nav>
 
   <main style="padding: 2rem;">
     <h1>Mes Commandes</h1>
@@ -99,5 +85,6 @@
       });
     });
   </script>
+
 </body>
 </html>

@@ -54,12 +54,12 @@
 
   <script>
     // ✅ MENU BURGER
-     // ✅ MENU BURGER
-     function toggleMenu(burger) {
-         burger.classList.toggle("active");
-         const nav = document.getElementById("navLinks");
-         nav.classList.toggle("show");
-      }
+    function toggleMenu(burger) {
+      burger.classList.toggle("active");
+      const nav = document.getElementById("navLinks");
+      nav.classList.toggle("show");
+    }
+
     // ✅ PANIER LOGIQUE
     let panier = JSON.parse(localStorage.getItem("panier")) || [];
 
@@ -133,40 +133,71 @@
       totalDiv.style.marginTop = "2rem";
       panierContainer.appendChild(totalDiv);
 
-      // ✅ Formulaire livraison
+      const utilisateur = JSON.parse(localStorage.getItem("utilisateurConnecte"));
       const formulaireDiv = document.createElement("div");
       formulaireDiv.className = "formulaire-livraison";
+      formulaireDiv.style.marginTop = "2rem";
+
       formulaireDiv.innerHTML = `
-    <h3>Informations de livraison</h3>  
-         <form id="formLivraison">
-         <input type="text" id="nom" placeholder="Votre nom complet" required />
-         <input type="text" id="adresse" placeholder="Votre adresse" required />
-         <input type="text" id="codepostal" placeholder="Code postal" required />
-         <input type="text" id="ville" placeholder="Ville" required />
-         <input type="email" id="email" placeholder="Votre email" required />
-         <input type="tel" id="tel" placeholder="Téléphone" required />
-         <button type="submit" class="btn-valider">✅ Valider le panier</button>
-     </form>
+        <h3>Adresse de livraison</h3>
+        <div id="adresseParDefaut">
+          <p><strong>Nom :</strong> ${utilisateur.nom} ${utilisateur.prénom}</p>
+          <p><strong>Adresse :</strong> ${utilisateur.adresse}, ${utilisateur.codePostal} ${utilisateur.ville}</p>
+          <p><strong>Email :</strong> ${utilisateur.email}</p>
+          <p><strong>Téléphone :</strong> ${utilisateur.telephone}</p>
+          <button type="button" onclick="document.getElementById('formPerso').style.display='block'">✏️ Utiliser une autre adresse</button>
+        </div>
 
-    `;
+        <form id="formPerso" style="display: none; margin-top: 1rem;">
+          <input type="text" id="nom" placeholder="Nom" required />
+          <input type="text" id="prénom" placeholder="Prénom" required />
+          <input type="text" id="adresse" placeholder="Adresse" required />
+          <input type="text" id="codepostal" placeholder="Code postal" required />
+          <input type="text" id="ville" placeholder="Ville" required />
+          <input type="email" id="email" placeholder="Email" required />
+          <input type="tel" id="tel" placeholder="Téléphone" required />
+        </form>
+
+        <button type="button" class="btn-valider" onclick="verifierConnexionAvantAchat()">✅ Valider le panier</button>
+      `;
+
       panierContainer.appendChild(formulaireDiv);
-
-      document.getElementById("formLivraison").addEventListener("submit", function (e) {
-        e.preventDefault();
-        const infosClient = {
-          nom: document.getElementById("nom").value,
-          adresse: document.getElementById("adresse").value,
-          codePostal: document.getElementById("codepostal").value,
-          ville: document.getElementById("ville").value,
-          email: document.getElementById("email").value,
-          tel: document.getElementById("tel").value
-        };
-        localStorage.setItem("commandeClient", JSON.stringify(infosClient));
-        window.location.href = "commande.html";
-      });
     }
 
-    // ✅ Démarrage après chargement complet
+    function verifierConnexionAvantAchat() {
+      const utilisateur = JSON.parse(localStorage.getItem("utilisateurConnecte"));
+
+      if (!utilisateur) {
+        alert("Vous devez être connecté pour finaliser votre achat.");
+        window.location.href = "espace-mon-client.html";
+        return false;
+      }
+
+      const formVisible = document.getElementById("formPerso").style.display !== "none";
+
+      const infosClient = formVisible
+        ? {
+            nom: document.getElementById("nom").value,
+            adresse: document.getElementById("adresse").value,
+            codePostal: document.getElementById("codepostal").value,
+            ville: document.getElementById("ville").value,
+            email: document.getElementById("email").value,
+            tel: document.getElementById("tel").value
+          }
+        : {
+            nom: utilisateur.nom + " " + utilisateur.prénom,
+            adresse: utilisateur.adresse,
+            codePostal: utilisateur.codePostal,
+            ville: utilisateur.ville,
+            email: utilisateur.email,
+            tel: utilisateur.telephone
+          };
+
+      localStorage.setItem("commandeClient", JSON.stringify(infosClient));
+      window.location.href = "commande.html";
+    }
+
+    // ✅ INIT
     document.addEventListener("DOMContentLoaded", function () {
       afficherPanier();
       mettreAJourCompteurPanier();
@@ -175,4 +206,3 @@
 
 </body>
 </html>
-
