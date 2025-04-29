@@ -27,7 +27,7 @@
     <div class="message" id="message"></div>
   </form>
 
-  <script>
+  <script> 
     const form = document.getElementById('form-inscription');
     const message = document.getElementById('message');
     
@@ -73,13 +73,17 @@
     
       Promise.all([
         // ⚡ Réveil du serveur Render
-        fetch('https://mon-backend-inscription-2.onrender.com/')
+        fetch('https://gametrash.onrender.com/')
           .then(() => console.log('🚀 Serveur Render réveillé'))
           .catch(err => console.warn('⚠️ Erreur pour réveiller Render', err))
       ])
       .then(() => {
+        // 💤 Pause de 2 secondes pour laisser le serveur bien se réveiller
+        return new Promise(resolve => setTimeout(resolve, 2000));
+      })
+      .then(() => {
         // Ensuite on envoie l'email
-        return fetch('https://mon-backend-inscription-2.onrender.com/send-email', {
+        return fetch('https://gametrash.onrender.com/send-email', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

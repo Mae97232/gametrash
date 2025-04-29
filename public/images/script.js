@@ -64,3 +64,4 @@ function enregistrerCommande(produit, prix) {
 
     });
   });
+  

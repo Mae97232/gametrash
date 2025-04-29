@@ -6,12 +6,13 @@
   <title>GameBoy Black</title>
   <link rel="stylesheet" href="design/style.css">
   <link rel="icon" href="images/favicon.ico" type="image/x-icon"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
 
   <!-- ✅ NAVIGATION + MENU BURGER -->
   <nav class="navbar">
-    <div class="logo">Game Trash</div>
+    <a href="index.html" class="logo">Game Trash</a>
     <div class="menu-burger" onclick="toggleMenu(this)">
       <div class="bar"></div>
       <div class="bar"></div>
@@ -24,6 +25,7 @@
       <li><a href="produit3.html">GameBoy Orange</a></li>
       <li><a href="produit4.html">GameBoy Violet</a></li>
       <li><a href="panier.html">🛒 Panier <span id="panierCount">(0)</span></a></li>
+      <li><a href="espace-mon-client.html"><i class="fas fa-user"></i> Espace client</a></li>
     </ul>
   </nav>
 
@@ -90,6 +92,12 @@
 
   <!-- ✅ Scripts -->
   <script>
+     function ajouterAuPanier(produit) {
+      let panier = JSON.parse(localStorage.getItem('panier')) || [];
+      panier.push(produit);
+      localStorage.setItem('panier', JSON.stringify(panier));
+      alert("Produit ajouté au panier !");
+     }
     // MENU BURGER
     function toggleMenu(burger) {
       burger.classList.toggle("active");
