@@ -6,6 +6,7 @@
   <title>Votre Panier</title>
   <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" href="design/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
 
@@ -24,6 +25,7 @@
       <li><a href="produit3.html">GameBoy Orange</a></li>
       <li><a href="produit4.html">GameBoy Violet</a></li>
       <li><a href="panier.html">🛒 Panier <span id="panierCount">(0)</span></a></li>
+      <li><a href="espace-mon-client.html"><i class="fas fa-user"></i> Espace client</a></li>
     </ul>
   </nav>
 
@@ -174,4 +176,192 @@
 </body>
 </html>
 
-     
+=======
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Votre Panier</title>
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="design/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- ✅ NAVIGATION -->
+  <nav class="navbar">
+    <div class="logo">Game Trash</div>
+    <div class="burger" onclick="toggleMenu(this)">
+      <div class="line1"></div>
+      <div class="line2"></div>
+      <div class="line3"></div>
+    </div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="produit.html">GameBoy Noir</a></li>
+      <li><a href="produit2.html">GameBoy Rouge</a></li>
+      <li><a href="produit3.html">GameBoy Orange</a></li>
+      <li><a href="produit4.html">GameBoy Violet</a></li>
+      <li><a href="panier.html">🛒 Panier <span id="panierCount">(0)</span></a></li>
+      <li><a href="espace-mon-client.html"><i class="fas fa-user"></i> Espace client</a></li>
+    </ul>
+  </nav>
+
+  <h1 class="titre-page">Votre Panier</h1>
+  <div id="panierContainer" style="padding: 2rem;"></div>
+
+  <!-- ✅ FOOTER -->
+  <footer>
+    <div id="flexbox-foot">
+      <div id="logo-foot">
+        <img src="images/game2.png" alt="Logo">
+        <span class="footer-logo-text">Game Trash</span>
+      </div>
+      <div class="footer-links">
+        <ul>
+          <li><a href="a-propos.html">À propos</a></li>
+          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 Game Trash. Tous droits réservés.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+       function verifierConnexionAvantAchat() {
+        const utilisateur = JSON.parse(localStorage.getItem("utilisateurConnecte"));
+
+        if (!utilisateur) {
+          alert("Vous devez être connecté pour finaliser votre achat.");
+          window.location.href = "espace-mon-client.html"; // redirige vers la page de connexion/inscription
+          return false;
+        }
+
+        // S’il est connecté, tu continues le processus d’achat normalement ici
+        finaliserAchat(); // à adapter selon ton code
+      }
+     // ✅ MENU BURGER
+     function toggleMenu(burger) {
+         burger.classList.toggle("active");
+         const nav = document.getElementById("navLinks");
+         nav.classList.toggle("show");
+      }
+    // ✅ PANIER LOGIQUE
+    let panier = JSON.parse(localStorage.getItem("panier")) || [];
+
+    function sauvegarderPanier() {
+      localStorage.setItem("panier", JSON.stringify(panier));
+      mettreAJourCompteurPanier();
+    }
+
+    function mettreAJourCompteurPanier() {
+      const totalArticles = panier.reduce((acc, item) => acc + item.quantite, 0);
+      const compteur = document.getElementById("panierCount");
+      if (compteur) compteur.textContent = `(${totalArticles})`;
+    }
+
+    function modifierQuantite(nomProduit, action) {
+      const produit = panier.find(item => item.nom === nomProduit);
+      if (!produit) return;
+
+      if (action === 'augmenter') produit.quantite++;
+      else if (action === 'diminuer') {
+        produit.quantite--;
+        if (produit.quantite <= 0) {
+          panier = panier.filter(item => item.nom !== nomProduit);
+        }
+      }
+
+      sauvegarderPanier();
+      afficherPanier();
+    }
+
+    function supprimerProduit(nomProduit) {
+      panier = panier.filter(item => item.nom !== nomProduit);
+      sauvegarderPanier();
+      afficherPanier();
+    }
+
+    function afficherPanier() {
+      const panierContainer = document.getElementById("panierContainer");
+      panierContainer.innerHTML = "";
+
+      if (panier.length === 0) {
+        panierContainer.innerHTML = "<p>Votre panier est vide.</p>";
+        return;
+      }
+
+      panier.forEach(item => {
+        const div = document.createElement("div");
+        div.classList.add("panier-item");
+        div.style.marginBottom = "1.5rem";
+        div.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <img src="${item.image}" alt="${item.nom}" style="width: 100px; border-radius: 8px;">
+            <div>
+              <p><strong>${item.nom}</strong></p>
+              <p>${item.prix}€ x ${item.quantite}</p>
+              <div style="margin: 0.5rem 0;">
+                <button onclick="modifierQuantite('${item.nom}', 'diminuer')">−</button>
+                <span style="margin: 0 1rem;">${item.quantite}</span>
+                <button onclick="modifierQuantite('${item.nom}', 'augmenter')">+</button>
+              </div>
+              <button onclick="supprimerProduit('${item.nom}')">🗑️ Supprimer</button>
+            </div>
+          </div>
+        `;
+        panierContainer.appendChild(div);
+      });
+
+      const total = panier.reduce((sum, item) => sum + item.prix * item.quantite, 0);
+      const totalDiv = document.createElement("div");
+      totalDiv.innerHTML = `<h3>Total à payer : ${total}€</h3>`;
+      totalDiv.style.marginTop = "2rem";
+      panierContainer.appendChild(totalDiv);
+
+      // ✅ Formulaire livraison
+      const formulaireDiv = document.createElement("div");
+      formulaireDiv.className = "formulaire-livraison";
+      formulaireDiv.innerHTML = `
+    <h3>Informations de livraison</h3>  
+         <form id="formLivraison">
+         <input type="text" id="nom" placeholder="Votre nom complet" required />
+         <input type="text" id="adresse" placeholder="Votre adresse" required />
+         <input type="text" id="codepostal" placeholder="Code postal" required />
+         <input type="text" id="ville" placeholder="Ville" required />
+         <input type="email" id="email" placeholder="Votre email" required />
+         <input type="tel" id="tel" placeholder="Téléphone" required />
+        <button type="button" class="btn-valider" onclick="verifierConnexionAvantAchat()">✅ Valider le panier</button>
+     </form>
+
+    `;
+      panierContainer.appendChild(formulaireDiv);
+
+      document.getElementById("formLivraison").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const infosClient = {
+          nom: document.getElementById("nom").value,
+          adresse: document.getElementById("adresse").value,
+          codePostal: document.getElementById("codepostal").value,
+          ville: document.getElementById("ville").value,
+          email: document.getElementById("email").value,
+          tel: document.getElementById("tel").value
+        };
+        localStorage.setItem("commandeClient", JSON.stringify(infosClient));
+        window.location.href = "commande.html";
+      });
+    }
+
+    // ✅ Démarrage après chargement complet
+    document.addEventListener("DOMContentLoaded", function () {
+      afficherPanier();
+      mettreAJourCompteurPanier();
+    });
+  </script>
+
+</body>
+</html>
