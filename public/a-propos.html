@@ -4,173 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>À propos - GameBoyStore</title>
-  <link rel="icon" href="Images/favicon.ico" type="image/x-icon" />
-  <link rel="stylesheet" href="style.css">
-  <style>
-    /* Reset et base */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: 'Arial', sans-serif;
-      line-height: 1.6;
-    }
-
-    header {
-      background-color: #111;
-      color: white;
-      padding: 20px;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-
-    .logo-texte {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .logo-header {
-      height: 50px;
-      margin-right: 10px;
-    }
-
-    .texte-header h1 {
-      font-size: 24px;
-    }
-
-    nav ul {
-      display: flex;
-      gap: 20px;
-      list-style: none;
-    }
-
-    nav ul li a {
-      color: white;
-      text-decoration: none;
-    }
-
-    nav ul li a.active {
-      text-decoration: underline;
-    }
-
-    .menu-burger {
-      display: none;
-      flex-direction: column;
-      gap: 5px;
-      cursor: pointer;
-    }
-
-    .menu-burger div {
-      width: 25px;
-      height: 3px;
-      background-color: white;
-      transition: 0.3s;
-    }
-
-    /* Animation burger → croix */
-    .menu-burger.active div:nth-child(1) {
-      transform: rotate(45deg) translate(5px, 5px);
-    }
-    .menu-burger.active div:nth-child(2) {
-      opacity: 0;
-    }
-    .menu-burger.active div:nth-child(3) {
-      transform: rotate(-45deg) translate(6px, -6px);
-    }
-
-    .nav-links {
-      display: flex;
-    }
-
-    .apropos-page {
-      padding: 40px 20px;
-    }
-
-    .conteneur-apropos {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 30px;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .texte-apropos {
-      max-width: 600px;
-    }
-
-    .image-apropos {
-      background-image: url('Images/game2.png');
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-      width: 200px;
-      height: 200px;
-    }
-
-    footer {
-      padding: 20px;
-      background-color: #111;
-      color: white;
-      text-align: center;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      nav ul {
-        display: none;
-        flex-direction: column;
-        background-color: #111;
-        position: absolute;
-        top: 80px;
-        right: 20px;
-        padding: 20px;
-        border-radius: 8px;
-      }
-
-      nav ul.show {
-        display: flex;
-      }
-
-      .menu-burger {
-        display: flex;
-      }
-
-      .logo-texte {
-        flex-direction: row;
-        justify-content: space-between;
-      }
-    }
-  </style>
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="design/style.css">
 </head>
 
 <body>
 
-  <!-- ✅ Header avec menu burger -->
-  <header>
-    <div class="logo-texte">
-      <div style="display: flex; align-items: center;">
-        <img src="Images/game2.png" alt="Logo GameBoyStore" class="logo-header">
-        <div class="texte-header">
-          <h1>GameBoyStore</h1>
-          <div class="slogan">Revivez la nostalgie pixel par pixel</div>
-        </div>
       </div>
-      <div class="menu-burger" onclick="toggleMenu(this)">
-        <div></div>
-        <div></div>
-        <div></div>
-      </div>
-    </div>
-    <nav>
-      <ul class="nav-links" id="navLinks">
-        <li><a href="index.html">Accueil</a></li>
-        <li><a href="a-propos.html" class="active">À propos</a></li>
-        <li><a href="contact.html">Contact</a></li>
-      </ul>
+       <!-- ✅ NAVIGATION + MENU BURGER -->
+  <nav class="navbar">
+    <a href="index.html" class="logo">Game Trash</a>
+    <div class="menu-burger" onclick="toggleMenu(this)">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+     </div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="produit.html">GameBoy Noir</a></li>
+      <li><a href="produit2.html">GameBoy Rouge</a></li>
+      <li><a href="produit3.html">GameBoy Orange</a></li>
+      <li><a href="produit4.html">GameBoy Violet</a></li>
+      <li><a href="panier.html">🛒 Panier <span id="panierCount">(0)</span></a></li>
+      <li><a href="espace-mon-client.html"><i class="fas fa-user"></i> Espace client</a></li>
+    </ul>
     </nav>
   </header>
 
@@ -191,7 +48,7 @@
   <footer>
     <div id="flexbox-foot">
       <div id="logo-foot">
-        <img src="Images/game2.png" alt="Logo" width="50">
+        <img src="images/game2.png" alt="Logo" width="50">
         <span>GameBoyStore © 2025</span>
       </div>
       <div>
@@ -200,12 +57,26 @@
     </div>
   </footer>
 
-  <!-- ✅ Script burger -->
+  <!-- ✅ Script -->
   <script>
     function toggleMenu(burger) {
       burger.classList.toggle("active");
       document.getElementById("navLinks").classList.toggle("show");
     }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const navLinks = document.querySelectorAll(".nav-links a");
+      navLinks.forEach(link => {
+        link.addEventListener("click", () => {
+          const nav = document.getElementById("navLinks");
+          const burger = document.querySelector(".menu-burger");
+          if (nav.classList.contains("show")) {
+            nav.classList.remove("show");
+            burger.classList.remove("active");
+          }
+        });
+      });
+    });
   </script>
 
 </body>
