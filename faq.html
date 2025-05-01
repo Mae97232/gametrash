@@ -9,22 +9,24 @@
 </head>
 <body>
 
-  <!-- ✅ Navigation (identique à tes autres pages) -->
-  <nav class="navbar">
-    <div class="logo">Game Trash</div>
-    <div class="burger" onclick="toggleMenu(this)">
-      <div class="line1"></div>
-      <div class="line2"></div>
-      <div class="line3"></div>
+   <!-- ✅ NAVIGATION + MENU BURGER -->
+   <nav class="navbar">
+    <a href="index.html" class="logo">Game Trash</a>
+    <div class="menu-burger" onclick="toggleMenu(this)">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
     </div>
     <ul class="nav-links" id="navLinks">
       <li><a href="index.html">Accueil</a></li>
-      <li><a href="produit.html">Produits</a></li>
-      <li><a href="a-propos.html">À propos</a></li>
-      <li><a href="faq.html">FAQ</a></li>
+      <li><a href="produit.html">GameBoy Noir</a></li>
+      <li><a href="produit2.html">GameBoy Rouge</a></li>
+      <li><a href="produit3.html">GameBoy Orange</a></li>
+      <li><a href="produit4.html">GameBoy Violet</a></li>
+      <li><a href="panier.html">🛒 Panier <span id="panierCount">(0)</span></a></li>
+      <li><a href="espace-mon-client.html"><i class="fas fa-user"></i> Espace client</a></li>
     </ul>
   </nav>
-
   <!-- ✅ Contenu FAQ -->
   <main class="faq-section">
     <h1>Foire Aux Questions (FAQ)</h1>
@@ -72,9 +74,10 @@
 
   <!-- ✅ Script pour le menu burger -->
   <script>
-    function toggleMenu(element) {
-      element.classList.toggle("active");
-      document.getElementById("navLinks").classList.toggle("active");
+   // MENU BURGER
+   function toggleMenu(burger) {
+      burger.classList.toggle("active");
+      document.getElementById("navLinks").classList.toggle("show");
     }
   </script>
 </body>
