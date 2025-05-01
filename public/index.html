@@ -10,7 +10,6 @@
 </head>
 
 <body>
-  
    <!-- ✅ NAVBAR -->
    <nav class="navbar">
       <div class="logo-texte">
@@ -33,7 +32,6 @@
          <li><a href="produit4.html">GameBoy Violete</a></li>
          <li><a href="panier.html">🛒 Panier <span id="panierCount">(0)</span></a></li>
          <li><a href="espace-mon-client.html"><i class="fas fa-user"></i> Espace client</a></li>
-
       </ul>
    </nav>
 
@@ -101,7 +99,7 @@
    <footer>
       <div id="flexbox-foot">
          <div id="logo-foot">
-            <img src="Images/game2.png" alt="Logo" />
+            <img src="images/game2.png" alt="Logo" />
             <span class="footer-logo-text">Game trash</span>
          </div>
          <div class="footer-links">
@@ -126,7 +124,6 @@
          nav.classList.toggle("show");
       }
 
-      // Fermer automatiquement le menu mobile quand on clique sur un lien
       document.querySelectorAll("#navLinks a").forEach(link => {
          link.addEventListener("click", () => {
             document.getElementById("navLinks").classList.remove("active");
@@ -144,9 +141,8 @@
       mettreAJourCompteurPanier();
    </script>
 
-   <!-- 🔥 SCRIPT pour envoyer email 🔥 -->
    <script>
-      document.getElementById('emailForm').addEventListener('submit', function(e) {
+      document.getElementById('emailForm')?.addEventListener('submit', function(e) {
          e.preventDefault();
 
          const to = document.getElementById('to').value;
@@ -170,5 +166,5 @@
          });
       });
    </script>
-
 </body>
+</html>
