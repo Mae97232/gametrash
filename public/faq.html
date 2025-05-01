@@ -4,27 +4,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FAQ - Game Trash</title>
-  <link rel="icon" href="Images/favicon.ico" type="image/x-icon" />
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" href="design/style.css">
 </head>
 <body>
 
-  <!-- ✅ Navigation (identique à tes autres pages) -->
-  <nav class="navbar">
-    <div class="logo">Game Trash</div>
-    <div class="burger" onclick="toggleMenu(this)">
-      <div class="line1"></div>
-      <div class="line2"></div>
-      <div class="line3"></div>
+   <!-- ✅ NAVIGATION + MENU BURGER -->
+   <nav class="navbar">
+    <a href="index.html" class="logo">Game Trash</a>
+    <div class="menu-burger" onclick="toggleMenu(this)">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
     </div>
     <ul class="nav-links" id="navLinks">
       <li><a href="index.html">Accueil</a></li>
-      <li><a href="produit.html">Produits</a></li>
-      <li><a href="a-propos.html">À propos</a></li>
-      <li><a href="faq.html">FAQ</a></li>
+      <li><a href="produit.html">GameBoy Noir</a></li>
+      <li><a href="produit2.html">GameBoy Rouge</a></li>
+      <li><a href="produit3.html">GameBoy Orange</a></li>
+      <li><a href="produit4.html">GameBoy Violet</a></li>
+      <li><a href="panier.html">🛒 Panier <span id="panierCount">(0)</span></a></li>
+      <li><a href="espace-mon-client.html"><i class="fas fa-user"></i> Espace client</a></li>
     </ul>
   </nav>
-
   <!-- ✅ Contenu FAQ -->
   <main class="faq-section">
     <h1>Foire Aux Questions (FAQ)</h1>
@@ -54,7 +56,7 @@
   <footer>
     <div id="flexbox-foot">
       <div id="logo-foot">
-        <img src="Images/game2.png" alt="Logo">
+        <img src="images/game2.png" alt="Logo">
         <span class="footer-logo-text">Game trash</span>
       </div>
       <div class="footer-links">
@@ -72,9 +74,10 @@
 
   <!-- ✅ Script pour le menu burger -->
   <script>
-    function toggleMenu(element) {
-      element.classList.toggle("active");
-      document.getElementById("navLinks").classList.toggle("active");
+   // MENU BURGER
+   function toggleMenu(burger) {
+      burger.classList.toggle("active");
+      document.getElementById("navLinks").classList.toggle("show");
     }
   </script>
 </body>
