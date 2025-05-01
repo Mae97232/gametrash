@@ -133,7 +133,23 @@
       totalDiv.style.marginTop = "2rem";
       panierContainer.appendChild(totalDiv);
 
-      const utilisateur = JSON.parse(localStorage.getItem("utilisateurConnecte"));
+      let utilisateur = null;
+      try {
+        utilisateur = JSON.parse(localStorage.getItem("utilisateurConnecte"));
+      } catch (e) {
+        utilisateur = null;
+      }
+
+      if (!utilisateur) {
+        const loginPrompt = document.createElement("div");
+        loginPrompt.innerHTML = `
+          <p style="margin-top: 2rem;"> Vous devez être connecté pour finaliser votre commande.</p>
+          <button onclick="window.location.href='espace-mon-client.html'">Se connecter</button>
+        `;
+        panierContainer.appendChild(loginPrompt);
+        return;
+      }
+
       const formulaireDiv = document.createElement("div");
       formulaireDiv.className = "formulaire-livraison";
       formulaireDiv.style.marginTop = "2rem";
@@ -165,7 +181,12 @@
     }
 
     function verifierConnexionAvantAchat() {
-      const utilisateur = JSON.parse(localStorage.getItem("utilisateurConnecte"));
+      let utilisateur;
+      try {
+        utilisateur = JSON.parse(localStorage.getItem("utilisateurConnecte"));
+      } catch (e) {
+        utilisateur = null;
+      }
 
       if (!utilisateur) {
         alert("Vous devez être connecté pour finaliser votre achat.");
@@ -177,7 +198,7 @@
 
       const infosClient = formVisible
         ? {
-            nom: document.getElementById("nom").value,
+            nom: document.getElementById("nom").value + " " + document.getElementById("prénom").value,
             adresse: document.getElementById("adresse").value,
             codePostal: document.getElementById("codepostal").value,
             ville: document.getElementById("ville").value,
