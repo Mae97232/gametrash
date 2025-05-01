@@ -10,7 +10,6 @@
 </head>
 
 <body>
-  
    <!-- ✅ NAVBAR -->
    <nav class="navbar">
       <div class="logo-texte">
@@ -33,7 +32,6 @@
          <li><a href="produit4.html">GameBoy Violete</a></li>
          <li><a href="panier.html">🛒 Panier <span id="panierCount">(0)</span></a></li>
          <li><a href="espace-mon-client.html"><i class="fas fa-user"></i> Espace client</a></li>
-
       </ul>
    </nav>
 
@@ -80,7 +78,7 @@
                <a href="a-propos.html" class="btn">En savoir plus</a>
             </div>
             <div class="image-apropos">
-               <img src="Images/game2.png" alt="GameBoy Nostalgie" />
+               <img src="images/game2.png" alt="GameBoy Nostalgie" />
             </div>
          </div>
       </section>
@@ -90,10 +88,10 @@
    <div class="modes-paiement">
       <h2>Modes de paiement acceptés</h2>
       <div class="paiement-logos">
-         <img src="Images/paypal logo.png" alt="PayPal" class="paiement-logo" />
-         <img src="Images/visa logo.png" alt="Carte Visa" class="paiement-logo" />
-         <img src="Images/mastercard logo.png" alt="Carte MasterCard" class="paiement-logo" />
-         <img src="Images/apple-pay logo.png" alt="Apple Pay" class="paiement-logo" />
+         <img src="images/paypal logo.png" alt="PayPal" class="paiement-logo" />
+         <img src="images/visa logo.png" alt="Carte Visa" class="paiement-logo" />
+         <img src="images/mastercard logo.png" alt="Carte MasterCard" class="paiement-logo" />
+         <img src="images/apple-pay logo.png" alt="Apple Pay" class="paiement-logo" />
       </div>
    </div>
 
@@ -101,7 +99,7 @@
    <footer>
       <div id="flexbox-foot">
          <div id="logo-foot">
-            <img src="Images/game2.png" alt="Logo" />
+            <img src="images/game2.png" alt="Logo" />
             <span class="footer-logo-text">Game trash</span>
          </div>
          <div class="footer-links">
@@ -126,7 +124,6 @@
          nav.classList.toggle("show");
       }
 
-      // Fermer automatiquement le menu mobile quand on clique sur un lien
       document.querySelectorAll("#navLinks a").forEach(link => {
          link.addEventListener("click", () => {
             document.getElementById("navLinks").classList.remove("active");
@@ -144,9 +141,8 @@
       mettreAJourCompteurPanier();
    </script>
 
-   <!-- 🔥 SCRIPT pour envoyer email 🔥 -->
    <script>
-      document.getElementById('emailForm').addEventListener('submit', function(e) {
+      document.getElementById('emailForm')?.addEventListener('submit', function(e) {
          e.preventDefault();
 
          const to = document.getElementById('to').value;
@@ -170,5 +166,5 @@
          });
       });
    </script>
-
 </body>
+</html>
