@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
 const Stripe = require('stripe');
+const path = require('path'); // ✅ nécessaire pour les chemins
 require('dotenv').config();
 
 const app = express();
@@ -10,15 +11,18 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 // ✅ CORS
 app.use(cors({
-  origin: '*', // Tu peux restreindre ici pour la sécurité
+  origin: '*',
 }));
 
 // ✅ Middleware
 app.use(express.json());
 
-// ✅ Test API
+// ✅ Sert les fichiers statiques (HTML/CSS/JS) depuis /public
+app.use(express.static(path.join(__dirname, 'public')));
+
+// ✅ Route pour afficher panier.html à la racine
 app.get('/', (req, res) => {
-  res.send('✅ API Server is running.');
+  res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
 
 // ✅ Envoi d'email
@@ -62,7 +66,7 @@ app.post('/create-checkout-session', async (req, res) => {
           product_data: {
             name: item.name,
           },
-          unit_amount: item.price * 100, // Montant en centimes
+          unit_amount: item.price * 100,
         },
         quantity: item.quantity,
       })),
