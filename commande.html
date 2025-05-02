@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mes Commandes</title>
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="design/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="index.html" class="logo">Game Trash</a>
+    <ul class="nav-links">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="espace-mon-client.html"><i class="fas fa-user"></i> Espace client</a></li>
+      <li><a href="panier.html">🛒 Panier</a></li>
+    </ul>
+  </nav>
+
+  <main style="padding: 2rem;">
+    <h1>Mes Commandes</h1>
+    <div id="commandesContainer"></div>
+  </main>
+
+  <footer>
+    <div class="footer-bottom">
+      <p>&copy; 2025 Game Trash. Tous droits réservés.</p>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const utilisateur = JSON.parse(localStorage.getItem("utilisateurConnecte"));
+      const commandes = JSON.parse(localStorage.getItem("commandes")) || [];
+      const container = document.getElementById("commandesContainer");
+
+      if (!utilisateur) {
+        container.innerHTML = "<p>Veuillez vous connecter pour voir vos commandes.</p>";
+        return;
+      }
+
+      const commandesUtilisateur = commandes.filter(c => c.utilisateur.email === utilisateur.email);
+
+      if (commandesUtilisateur.length === 0) {
+        container.innerHTML = "<p>Aucune commande trouvée.</p>";
+        return;
+      }
+
+      commandesUtilisateur.reverse().forEach((commande, index) => {
+        const div = document.createElement("div");
+        div.className = "commande";
+        div.style = "border: 1px solid #ccc; padding: 1.5rem; margin-bottom: 2rem; border-radius: 10px; background-color: #f9f9f9;";
+
+        const produitsHTML = commande.panier.map(p => `
+          <li>${p.nom} — ${p.prix}€ × ${p.quantite} = <strong>${p.prix * p.quantite}€</strong></li>
+        `).join("");
+
+        const total = commande.panier.reduce((sum, item) => sum + item.prix * item.quantite, 0);
+
+        const adresseLivraison = commande.adresseLivraison || commande.utilisateur.adresse;
+        const villeLivraison = commande.villeLivraison || commande.utilisateur.ville;
+        const codePostalLivraison = commande.codePostalLivraison || commande.utilisateur.codePostal;
+        const nomDestinataire = commande.nomDestinataire || commande.utilisateur.nom;
+        const prenomDestinataire = commande.prenomDestinataire || commande.utilisateur.prénom;
+
+        div.innerHTML = `
+          <h2>Commande #${commandesUtilisateur.length - index}</h2>
+          <p><strong>Date :</strong> ${commande.date}</p>
+          <h3>Livraison :</h3>
+          <ul>
+            <li><strong>Nom :</strong> ${nomDestinataire}</li>
+            <li><strong>Prénom :</strong> ${prenomDestinataire}</li>
+            <li><strong>Email :</strong> ${commande.utilisateur.email}</li>
+            <li><strong>Téléphone :</strong> ${commande.utilisateur.telephone}</li>
+            <li><strong>Adresse :</strong> ${adresseLivraison}, ${villeLivraison}, ${codePostalLivraison}</li>
+          </ul>
+          <h3>Produits :</h3>
+          <ul>${produitsHTML}</ul>
+          <p><strong>Total :</strong> ${total}€</p>
+        `;
+
+        container.appendChild(div);
+      });
+    });
+  </script>
+
+</body>
+</html>

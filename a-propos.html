@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>À propos - GameBoyStore</title>
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="design/style.css">
+</head>
+
+<body>
+
+      </div>
+       <!-- ✅ NAVIGATION + MENU BURGER -->
+  <nav class="navbar">
+    <a href="index.html" class="logo">Game Trash</a>
+    <div class="menu-burger" onclick="toggleMenu(this)">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+     </div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="produit.html">GameBoy Noir</a></li>
+      <li><a href="produit2.html">GameBoy Rouge</a></li>
+      <li><a href="produit3.html">GameBoy Orange</a></li>
+      <li><a href="produit4.html">GameBoy Violet</a></li>
+      <li><a href="panier.html">🛒 Panier <span id="panierCount">(0)</span></a></li>
+      <li><a href="espace-mon-client.html"><i class="fas fa-user"></i> Espace client</a></li>
+    </ul>
+    </nav>
+  </header>
+
+  <!-- ✅ Section À propos -->
+  <section class="apropos-page">
+    <div class="conteneur-apropos">
+      <div class="texte-apropos">
+        <h2>Notre histoire</h2>
+        <p>Chez <strong>GameBoyStore</strong>, on ne vend pas juste des consoles. On partage une passion...</p>
+        <p>Chaque GameBoy est reconditionnée avec amour, pour que la magie d'hier vous revienne entre les mains.</p>
+        <p>Depuis notre création, nous avons aidé des milliers de fans à revivre leurs souvenirs, pixel après pixel.</p>
+      </div>
+      <div class="image-apropos"></div>
+    </div>
+  </section>
+
+  <!-- ✅ Footer -->
+  <footer>
+    <div id="flexbox-foot">
+      <div id="logo-foot">
+        <img src="images/game2.png" alt="Logo" width="50">
+        <span>GameBoyStore © 2025</span>
+      </div>
+      <div>
+        <a href="mentions.html">Mentions légales</a> | <a href="contact.html">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ✅ Script -->
+  <script>
+    function toggleMenu(burger) {
+      burger.classList.toggle("active");
+      document.getElementById("navLinks").classList.toggle("show");
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const navLinks = document.querySelectorAll(".nav-links a");
+      navLinks.forEach(link => {
+        link.addEventListener("click", () => {
+          const nav = document.getElementById("navLinks");
+          const burger = document.querySelector(".menu-burger");
+          if (nav.classList.contains("show")) {
+            nav.classList.remove("show");
+            burger.classList.remove("active");
+          }
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>

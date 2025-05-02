@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Espace Client</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="design/style.css">
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
+</head>
+<body>
+  <div class="form-container">
+    <h2 id="form-title">Connexion</h2>
+
+    <!-- Connexion -->
+    <form id="login-form">
+      <label for="email">Email :</label>
+      <input type="email" id="email" required placeholder="Votre email">
+      
+      <label for="password">Mot de passe :</label>
+      <input type="password" id="password" required placeholder="Votre mot de passe">
+      
+      <button type="submit">Se connecter</button>
+      
+      <p>Pas encore de compte ? <a href="inscription.html">Créez-en un ici</a></p>
+      <p><a href="mot-de-passe-oublie.html">Mot de passe oublié ?</a></p>
+    </form>
+
+    <!-- Inscription -->
+    <form id="signup-form" style="display: none;">
+      <h2>Inscription</h2>
+      <label for="email-signup">Email :</label>
+      <input type="email" id="email-signup" required placeholder="Votre email">
+
+      <label for="password-signup">Mot de passe :</label>
+      <input type="password" id="password-signup" required placeholder="Choisir un mot de passe">
+
+      <label for="confirm-password">Confirmer le mot de passe :</label>
+      <input type="password" id="confirm-password" required placeholder="Confirmer le mot de passe">
+
+      <button type="submit">S'inscrire</button>
+
+      <p>Déjà un compte ? <a href="#" id="show-login-form">Se connecter ici</a></p>
+    </form>
+  </div>
+
+  <script src="script.js"></script>
+    <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const loginForm = document.getElementById("login-form");
+
+    loginForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      // On récupère les utilisateurs du localStorage
+      const utilisateurs = JSON.parse(localStorage.getItem('utilisateurs')) || [];
+
+      // On cherche l'utilisateur qui correspond
+      const utilisateur = utilisateurs.find(u => u.email === email && u.password === password);
+
+      if (utilisateur) {
+        // Connexion réussie : on enregistre l'utilisateur connecté
+        localStorage.setItem('utilisateurConnecte', JSON.stringify(utilisateur));
+        // Redirige vers l'espace client
+        window.location.href = "espace-mon-client.html";
+      } else {
+        alert("Email ou mot de passe incorrect.");
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Mot de passe oublié</title>
+  <link rel="stylesheet" href="design/style.css">
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
+</head>
+<body>
+
+  <form id="mdp-oublie-form">
+    <h2>Mot de passe oublié</h2>
+    <input type="email" id="email" placeholder="Votre adresse email" required>
+    <button type="submit">Réinitialiser le mot de passe</button>
+    <div class="message" id="message"></div>
+  </form>
+
+  <script>
+    const form = document.getElementById("mdp-oublie-form");
+    const message = document.getElementById("message");
+
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+      const email = document.getElementById("email").value.trim();
+
+      if (!email) {
+        message.textContent = "Veuillez entrer une adresse email.";
+        message.style.color = "red";
+        return;
+      }
+
+      // Simule l'envoi de mail
+      message.textContent = "Un lien de réinitialisation a été envoyé.";
+      message.style.color = "green";
+    });
+  </script>
+</body>
+</html>

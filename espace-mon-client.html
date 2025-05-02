@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Espace Client</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="design/style.css">
+</head>
+<body>
+  <header>
+     <!-- ✅ NAVIGATION + MENU BURGER -->
+  <nav class="navbar">
+    <a href="index.html" class="logo">Game Trash</a>
+    <div class="menu-burger" onclick="toggleMenu(this)">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+   </div>
+   <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Accueil</a></li>
+      <li><a href="produit.html">GameBoy Noire</a></li>
+      <li><a href="produit2.html">GameBoy Rouge</a></li>
+      <li><a href="produit3.html">GameBoy Orange</a></li>
+      <li><a href="produit4.html">GameBoy Violete</a></li>
+      <li><a href="connexion.html">Connexion client</a></li>
+      <li><a href="panier.html">🛒 Panier <span id="panierCount">(0)</span></a></li>
+      <li><a href="espace-mon-client.html"><i class="fas fa-user"></i> Espace client</a></li>
+  </header>
+
+  <main>
+    <h1>Bienvenue dans votre espace client</h1>
+
+    <section id="infos-utilisateur">
+      <h2>Informations personnelles</h2>
+      <p><strong>Nom :</strong> <span id="nom"></span></p>
+      <p><strong>Prénom :</strong> <span id="prenom"></span></p>
+      <p><strong>Email :</strong> <span id="email"></span></p>
+      <p><strong>Téléphone :</strong> <span id="telephone"></span></p>
+      <p><strong>Adresse :</strong> <span id="adresse"></span></p>
+      <p><strong>Ville :</strong> <span id="ville"></span></p>
+      <p><strong>Code postal :</strong> <span id="codePostal"></span></p>
+      <p><strong>Date de naissance :</strong> <span id="naissance"></span></p>
+      <button onclick="window.location.href='modifier-profil.html'">✏️ Modifier mon profil</button>
+    </section>
+    
+
+    <section id="commandes">
+      <h2>Vos commandes</h2>
+      <a href="commande.html">Voir mes commandes</a>
+    </section>
+
+    <button id="logout">Se déconnecter</button>
+  </main>
+
+  <script>
+    function toggleMenu(burger) {
+         burger.classList.toggle("active");
+         const nav = document.getElementById("navLinks");
+         nav.classList.toggle("show");
+    }
+    const utilisateur = JSON.parse(localStorage.getItem('utilisateurConnecte'));
+    if (!utilisateur) {
+      window.location.href = 'connexion.html';
+    } else {
+      document.getElementById('nom').textContent = utilisateur.nom;
+      document.getElementById('prenom').textContent = utilisateur.prénom;
+      document.getElementById('email').textContent = utilisateur.email;
+      document.getElementById('telephone').textContent = utilisateur.telephone;
+      document.getElementById('adresse').textContent = utilisateur.adresse;
+      document.getElementById('ville').textContent = utilisateur.ville;
+      document.getElementById('codePostal').textContent = utilisateur.codePostal;
+      document.getElementById('naissance').textContent = utilisateur.naissance;
+    }
+
+    document.getElementById('logout').addEventListener('click', function () {
+      localStorage.removeItem('utilisateurConnecte');
+      window.location.href = 'connexion.html';
+    });
+  </script>
+</body>
+</html>

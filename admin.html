@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <title>Admin - Connexion</title>
+   <link rel="stylesheet" href="design/style.css" />
+</head>
+<body>
+
+<div id="loginSection">
+   <h1>Accès Admin</h1>
+   <form id="loginForm">
+      <input type="password" id="password" placeholder="Mot de passe admin" required>
+      <button type="submit">Se connecter</button>
+   </form>
+   <div id="loginError" style="color:red;"></div>
+</div>
+
+<div id="adminSection" style="display:none;">
+   <h1>Envoyer un Email</h1>
+
+   <form id="emailForm">
+      <input type="email" id="to" placeholder="Email du destinataire" required>
+      <input type="text" id="subject" placeholder="Sujet" required>
+      <textarea id="text" placeholder="Votre message ici..." required></textarea>
+      <button type="submit">Envoyer</button>
+   </form>
+
+   <div id="resultat"></div>
+
+   <button id="logoutButton" style="margin-top:20px;">Se déconnecter</button>
+</div>
+
+<script>
+   const adminPassword = "GameTrash972"; // 🛡️ Ton mot de passe ici
+
+   // Vérifie si l'utilisateur est déjà connecté
+   if (localStorage.getItem('adminConnecte') === 'true') {
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('adminSection').style.display = 'block';
+   }
+
+   document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const passwordInput = document.getElementById('password').value;
+      if (passwordInput === adminPassword) {
+         localStorage.setItem('adminConnecte', 'true'); // ➡️ On marque qu'il est connecté
+         document.getElementById('loginSection').style.display = 'none';
+         document.getElementById('adminSection').style.display = 'block';
+      } else {
+         document.getElementById('loginError').innerText = "Mot de passe incorrect.";
+      }
+   });
+
+   document.getElementById('logoutButton').addEventListener('click', function() {
+      localStorage.removeItem('adminConnecte'); // ➡️ Déconnexion
+      window.location.reload(); // Recharge la page
+   });
+
+   document.getElementById('emailForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const to = document.getElementById('to').value;
+      const subject = document.getElementById('subject').value;
+      const text = document.getElementById('text').value;
+
+      try {
+         const response = await fetch('/send-email', {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ to, subject, text })
+         });
+
+         const result = await response.text();
+         document.getElementById('resultat').innerText = result;
+      } catch (error) {
+         document.getElementById('resultat').innerText = "Erreur lors de l'envoi.";
+      }
+   });
+</script>
+
+</body>
+</html>
