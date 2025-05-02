@@ -21,6 +21,10 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ✅ Route pour afficher panier.html à la racine
+const path = require('path'); // Assure-toi que cette ligne est en haut du fichier
+
+app.use(express.static(path.join(__dirname, 'public'))); // Pour servir tous les fichiers statiques
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
