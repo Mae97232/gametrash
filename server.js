@@ -76,6 +76,6 @@ app.post('/create-checkout-session', async (req, res) => {
 });
 
 // ✅ Lancer le serveur
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur lancé sur le port ${PORT}`);
+app.listen(4242, () => {
+  console.log("Serveur démarré sur http://localhost:4242");
 });
