@@ -6,21 +6,20 @@ const path = require('path');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 10000;
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+const PORT = process.env.PORT || 10000;
 
-// ✅ Middleware
-app.use(cors({
-  origin: ['https://gametrash.onrender.com', 'https://mae97232.github.io']
-}));
+// Middleware
+app.use(cors({ origin: 'https://mae97232.github.io' })); // ou gametrash.onrender.com selon besoin
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Page d'accueil
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
 
-// ✅ Envoi d'email
+// Envoi email
 app.post('/send-email', async (req, res) => {
   const { to, subject, html } = req.body;
 
@@ -47,7 +46,7 @@ app.post('/send-email', async (req, res) => {
   }
 });
 
-// ✅ Stripe Checkout
+// Paiement Stripe
 app.post('/create-checkout-session', async (req, res) => {
   const { items } = req.body;
 
@@ -61,7 +60,7 @@ app.post('/create-checkout-session', async (req, res) => {
           product_data: {
             name: item.name,
           },
-          unit_amount: item.price, // ❗ PAS de *100 ici, déjà fait côté client
+          unit_amount: item.price * 100,
         },
         quantity: item.quantity,
       })),
@@ -76,7 +75,7 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
-// ✅ Lancer le serveur
+// Démarrer le serveur
 app.listen(PORT, () => {
-  console.log(`Serveur démarré sur http://localhost:${PORT}`);
+  console.log(`✅ Serveur démarré sur http://localhost:${PORT}`);
 });
