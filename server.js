@@ -2,32 +2,22 @@ const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
 const Stripe = require('stripe');
-const path = require('path'); // ✅ nécessaire pour les chemins
+const path = require('path'); // ✅ Garde uniquement celle-ci
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 10000;
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
-// ✅ CORS
-app.use(cors({
-  origin: '*',
-}));
-
-// ✅ Middleware
+// Middleware
+app.use(cors({ origin: '*' }));
 app.use(express.json());
-
-// ✅ Sert les fichiers statiques (HTML/CSS/JS) depuis /public
 app.use(express.static(path.join(__dirname, 'public')));
-
-// ✅ Route pour afficher panier.html à la racine
-const path = require('path'); // Assure-toi que cette ligne est en haut du fichier
-
-app.use(express.static(path.join(__dirname, 'public'))); // Pour servir tous les fichiers statiques
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
+
 
 // ✅ Envoi d'email
 app.post('/send-email', async (req, res) => {
