@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 10000;
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Middleware
-app.use(cors({ origin: '*' }));
+app.use(cors({ origin: 'https://mae97232.github.io' }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
