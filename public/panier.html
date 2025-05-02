@@ -59,25 +59,25 @@
       const nav = document.getElementById("navLinks");
       nav.classList.toggle("show");
     }
-
+  
     // ✅ PANIER LOGIQUE
     let panier = JSON.parse(localStorage.getItem("panier")) || [];
-
+  
     function sauvegarderPanier() {
       localStorage.setItem("panier", JSON.stringify(panier));
       mettreAJourCompteurPanier();
     }
-
+  
     function mettreAJourCompteurPanier() {
       const totalArticles = panier.reduce((acc, item) => acc + item.quantite, 0);
       const compteur = document.getElementById("panierCount");
       if (compteur) compteur.textContent = `(${totalArticles})`;
     }
-
+  
     function modifierQuantite(nomProduit, action) {
       const produit = panier.find(item => item.nom === nomProduit);
       if (!produit) return;
-
+  
       if (action === 'augmenter') produit.quantite++;
       else if (action === 'diminuer') {
         produit.quantite--;
@@ -85,26 +85,26 @@
           panier = panier.filter(item => item.nom !== nomProduit);
         }
       }
-
+  
       sauvegarderPanier();
       afficherPanier();
     }
-
+  
     function supprimerProduit(nomProduit) {
       panier = panier.filter(item => item.nom !== nomProduit);
       sauvegarderPanier();
       afficherPanier();
     }
-
+  
     function afficherPanier() {
       const panierContainer = document.getElementById("panierContainer");
       panierContainer.innerHTML = "";
-
+  
       if (panier.length === 0) {
         panierContainer.innerHTML = "<p>Votre panier est vide.</p>";
         return;
       }
-
+  
       panier.forEach(item => {
         const div = document.createElement("div");
         div.classList.add("panier-item");
@@ -126,20 +126,20 @@
         `;
         panierContainer.appendChild(div);
       });
-
+  
       const total = panier.reduce((sum, item) => sum + item.prix * item.quantite, 0);
       const totalDiv = document.createElement("div");
       totalDiv.innerHTML = `<h3>Total à payer : ${total}€</h3>`;
       totalDiv.style.marginTop = "2rem";
       panierContainer.appendChild(totalDiv);
-
+  
       let utilisateur = null;
       try {
         utilisateur = JSON.parse(localStorage.getItem("utilisateurConnecte"));
       } catch (e) {
         utilisateur = null;
       }
-
+  
       if (!utilisateur) {
         const loginPrompt = document.createElement("div");
         loginPrompt.innerHTML = `
@@ -149,11 +149,11 @@
         panierContainer.appendChild(loginPrompt);
         return;
       }
-
+  
       const formulaireDiv = document.createElement("div");
       formulaireDiv.className = "formulaire-livraison";
       formulaireDiv.style.marginTop = "2rem";
-
+  
       formulaireDiv.innerHTML = `
         <h3>Adresse de livraison</h3>
         <div id="adresseParDefaut">
@@ -163,7 +163,7 @@
           <p><strong>Téléphone :</strong> ${utilisateur.telephone}</p>
           <button type="button" onclick="document.getElementById('formPerso').style.display='block'">✏️ Utiliser une autre adresse</button>
         </div>
-
+  
         <form id="formPerso" style="display: none; margin-top: 1rem;">
           <input type="text" id="nom" placeholder="Nom" required />
           <input type="text" id="prénom" placeholder="Prénom" required />
@@ -173,29 +173,29 @@
           <input type="email" id="email" placeholder="Email" required />
           <input type="tel" id="tel" placeholder="Téléphone" required />
         </form>
-
-        <button type="button" class="btn-valider" onclick="verifierConnexionAvantAchat()">✅ Valider le panier</button>
+  
+        <button type="button" class="btn-valider" onclick="lancerPaiementStripe()">✅ Valider le panier</button>
       `;
-
+  
       panierContainer.appendChild(formulaireDiv);
     }
-
-    function verifierConnexionAvantAchat() {
+  
+    async function verifierConnexionAvantAchat() {
       let utilisateur;
       try {
         utilisateur = JSON.parse(localStorage.getItem("utilisateurConnecte"));
       } catch (e) {
         utilisateur = null;
       }
-
+  
       if (!utilisateur) {
         alert("Vous devez être connecté pour finaliser votre achat.");
         window.location.href = "espace-mon-client.html";
-        return false;
+        return;
       }
-
+  
       const formVisible = document.getElementById("formPerso").style.display !== "none";
-
+  
       const infosClient = formVisible
         ? {
             nom: document.getElementById("nom").value + " " + document.getElementById("prénom").value,
@@ -213,42 +213,38 @@
             email: utilisateur.email,
             tel: utilisateur.telephone
           };
-
+  
       localStorage.setItem("commandeClient", JSON.stringify(infosClient));
-      window.location.href = "commande.html";
-    }
-
-    // ✅ INTÉGRATION STRIPE
-    function lancerPaiementStripe() {
-      const panier = JSON.parse(localStorage.getItem("panier")) || [];
-
-      const items = panier.map(item => ({
-        name: item.nom,
-        price: Math.round(item.prix * 100), // en centimes
-        quantity: item.quantite
+  
+      // ✅ Lance le paiement Stripe
+      const items = panier.map(produit => ({
+        name: produit.nom,
+        price: produit.prix * 100, // Stripe attend les prix en centimes
+        quantity: produit.quantite
       }));
-
-      fetch("http://localhost:10000/create-checkout-session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ items })
-      })
-      .then(res => res.json())
-      .then(data => {
+  
+      try {
+        const response = await fetch('http://localhost:10000/create-checkout-session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ items })
+        });
+  
+        const data = await response.json();
+  
         if (data.url) {
           window.location.href = data.url;
         } else {
-          alert("Une erreur est survenue lors de la création de la session Stripe.");
+          alert("Erreur : la session Stripe n'a pas pu être créée.");
         }
-      })
-      .catch(err => {
+      } catch (err) {
         console.error(err);
-        alert("Erreur de connexion avec le serveur Stripe.");
-      });
+        alert("Erreur de communication avec le serveur.");
+      }
     }
-
+  
     // ✅ INIT
     document.addEventListener("DOMContentLoaded", function () {
       afficherPanier();
