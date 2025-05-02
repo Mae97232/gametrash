@@ -2,22 +2,23 @@ const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
 const Stripe = require('stripe');
-const path = require('path'); // ✅ Garde uniquement celle-ci
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 10000;
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
-// Middleware
-app.use(cors({ origin: 'https://mae97232.github.io' }));
+// ✅ Middleware
+app.use(cors({
+  origin: ['https://gametrash.onrender.com', 'https://mae97232.github.io']
+}));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
-
 
 // ✅ Envoi d'email
 app.post('/send-email', async (req, res) => {
@@ -60,7 +61,7 @@ app.post('/create-checkout-session', async (req, res) => {
           product_data: {
             name: item.name,
           },
-          unit_amount: item.price * 100,
+          unit_amount: item.price, // ❗ PAS de *100 ici, déjà fait côté client
         },
         quantity: item.quantity,
       })),
@@ -76,6 +77,6 @@ app.post('/create-checkout-session', async (req, res) => {
 });
 
 // ✅ Lancer le serveur
-app.listen(4242, () => {
-  console.log("Serveur démarré sur http://localhost:4242");
+app.listen(PORT, () => {
+  console.log(`Serveur démarré sur http://localhost:${PORT}`);
 });
