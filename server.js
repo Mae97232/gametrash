@@ -10,7 +10,7 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const PORT = process.env.PORT || 10000;
 
 // Middleware
-app.use(cors({ origin: 'https://mae97232.github.io' })); // ou gametrash.onrender.com selon besoin
+app.use(cors({ origin: 'https://mae97232.github.io' }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -60,12 +60,12 @@ app.post('/create-checkout-session', async (req, res) => {
           product_data: {
             name: item.name,
           },
-          unit_amount: item.price * 100,
+          unit_amount: item.price, // Assure-toi que c'est déjà en centimes
         },
         quantity: item.quantity,
       })),
-      success_url: 'https://mae97232.github.io/gametrash/success.html',
-      cancel_url: 'https://mae97232.github.io/gametrash/cancel.html',
+      success_url: 'https://mae97232.github.io/gametrash/index.html',  // ✅ Redirection après paiement
+      cancel_url: 'https://mae97232.github.io/gametrash/panier.html',  // ✅ Retour si annulation
     });
 
     res.status(200).json({ url: session.url });
@@ -75,7 +75,7 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
-// Démarrer le serveur
+// Démarrage du serveur
 app.listen(PORT, () => {
   console.log(`✅ Serveur démarré sur http://localhost:${PORT}`);
 });
