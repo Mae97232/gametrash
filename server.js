@@ -40,9 +40,10 @@ app.post('/send-email', async (req, res) => {
       html
     });
     res.status(200).json({ message: 'Email envoyé avec succès.' });
-  } catch (error) {
-    console.error('Erreur d\'envoi détaillée :', error);
-    res.status(500).json({ error: 'Erreur lors de l\'envoi de l\'email.' });
+  }
+  catch (error) {
+    console.error('Erreur d\'envoi détaillée :', error); // <-- Garde ça
+    res.status(500).json({ error: `Erreur lors de l'envoi de l'email : ${error.message}` }); // <-- Ajoute ça
   }  
 });
 
