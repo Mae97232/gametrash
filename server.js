@@ -3,23 +3,51 @@ const cors = require('cors');
 const nodemailer = require('nodemailer');
 const Stripe = require('stripe');
 const path = require('path');
+const mongoose = require('mongoose');
 require('dotenv').config();
 
+// Initialisation
 const app = express();
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const PORT = process.env.PORT || 10000;
+
+// Connexion à MongoDB Atlas
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log('✅ Connecté à MongoDB Atlas'))
+.catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
 
 // Middleware
 app.use(cors({ origin: 'https://mae97232.github.io' }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Page d'accueil
+// Modèle utilisateur
+const User = require('./models/user');
+
+// Route d'inscription
+app.post('/register', async (req, res) => {
+  try {
+    const existing = await User.findOne({ email: req.body.email });
+    if (existing) return res.status(400).json({ error: 'Email déjà utilisé.' });
+
+    const user = new User(req.body);
+    await user.save();
+    res.status(201).json({ message: 'Utilisateur enregistré avec succès.' });
+  } catch (err) {
+    console.error('❌ Erreur enregistrement :', err);
+    res.status(500).json({ error: 'Erreur lors de l\'enregistrement.' });
+  }
+});
+
+// Route page d'accueil
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
 
-// Envoi email
+// Route d'envoi d'email
 app.post('/send-email', async (req, res) => {
   const { to, subject, html } = req.body;
 
@@ -40,14 +68,13 @@ app.post('/send-email', async (req, res) => {
       html
     });
     res.status(200).json({ message: 'Email envoyé avec succès.' });
+  } catch (error) {
+    console.error('Erreur d\'envoi détaillée :', error);
+    res.status(500).json({ error: `Erreur lors de l'envoi de l'email : ${error.message}` });
   }
-  catch (error) {
-    console.error('Erreur d\'envoi détaillée :', error); // <-- Garde ça
-    res.status(500).json({ error: `Erreur lors de l'envoi de l'email : ${error.message}` }); // <-- Ajoute ça
-  }  
 });
 
-// Paiement Stripe
+// Route Stripe
 app.post('/create-checkout-session', async (req, res) => {
   const { items } = req.body;
 
@@ -61,12 +88,12 @@ app.post('/create-checkout-session', async (req, res) => {
           product_data: {
             name: item.name,
           },
-          unit_amount: item.price, // Assure-toi que c'est déjà en centimes
+          unit_amount: item.price,
         },
         quantity: item.quantity,
       })),
-      success_url: 'https://mae97232.github.io/gametrash/index.html',  // ✅ Redirection après paiement
-      cancel_url: 'https://mae97232.github.io/gametrash/panier.html',  // ✅ Retour si annulation
+      success_url: 'https://mae97232.github.io/gametrash/index.html',
+      cancel_url: 'https://mae97232.github.io/gametrash/panier.html',
     });
 
     res.status(200).json({ url: session.url });
@@ -76,7 +103,7 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
-// Démarrage du serveur
+// Lancement du serveur
 app.listen(PORT, () => {
   console.log(`✅ Serveur démarré sur http://localhost:${PORT}`);
 });
