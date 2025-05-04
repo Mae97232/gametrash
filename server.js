@@ -12,10 +12,7 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const PORT = process.env.PORT || 10000;
 
 // Connexion à MongoDB Atlas
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
+mongoose.connect(process.env.MONGO_URI)
 .then(() => console.log('✅ Connecté à MongoDB Atlas'))
 .catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
 
