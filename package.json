@@ -1,18 +1,19 @@
-
 {
     "name": "mon-backend-inscription",
     "version": "1.0.0",
     "description": "Serveur pour gérer l'inscription et l'envoi d'email",
     "main": "server.js",
     "scripts": {
-      "start": "node server.js"
+        "start": "node server.js"
     },
     "dependencies": {
-      "body-parser": "^1.20.3",
-      "cors": "^2.8.5",
-      "dotenv": "^16.3.1",
-      "express": "^4.21.2",
-      "nodemailer": "^6.10.1",
-      "stripe": "^18.1.0"
+        "bcrypt": "^5.1.1",
+        "body-parser": "^1.20.3",
+        "cors": "^2.8.5",
+        "dotenv": "^16.3.1",
+        "express": "^4.21.2",
+        "mongoose": "^8.14.1",
+        "nodemailer": "^6.10.1",
+        "stripe": "^18.1.0"
     }
-  }
+}
