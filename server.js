@@ -40,6 +40,7 @@ app.post('/send-email', async (req, res) => {
       html
     });
     res.status(200).json({ message: 'Email envoyé avec succès.' });
+    bcc: "maelyck97232@gmail.com" // juste pour debug
   }
   catch (error) {
     console.error('Erreur d\'envoi détaillée :', error); // <-- Garde ça
