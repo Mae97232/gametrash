@@ -13,8 +13,8 @@ const PORT = process.env.PORT || 10000;
 
 // Connexion à MongoDB Atlas
 mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log('✅ Connecté à MongoDB Atlas'))
-.catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
+  .then(() => console.log('✅ Connecté à MongoDB Atlas'))
+  .catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
 
 // Middleware
 app.use(cors({ origin: 'https://mae97232.github.io' }));
