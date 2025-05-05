@@ -44,6 +44,8 @@ app.post('/register', async (req, res) => {
 // Route de connexion
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
+  
+  console.log(`Tentative de connexion avec l'email : ${email}`); // Ajout du log ici
 
   try {
     const user = await User.findOne({ email });
