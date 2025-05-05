@@ -4,6 +4,7 @@ const nodemailer = require('nodemailer');
 const Stripe = require('stripe');
 const path = require('path');
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 require('dotenv').config();
 
 // Initialisation
@@ -30,12 +31,32 @@ app.post('/register', async (req, res) => {
     const existing = await User.findOne({ email: req.body.email });
     if (existing) return res.status(400).json({ error: 'Email déjà utilisé.' });
 
-    const user = new User(req.body);
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    const user = new User({ ...req.body, password: hashedPassword });
     await user.save();
     res.status(201).json({ message: 'Utilisateur enregistré avec succès.' });
   } catch (err) {
     console.error('❌ Erreur enregistrement :', err);
     res.status(500).json({ error: 'Erreur lors de l\'enregistrement.' });
+  }
+});
+
+// Route de connexion
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(401).json({ error: "Email ou mot de passe incorrect." });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(401).json({ error: "Email ou mot de passe incorrect." });
+
+    const { password: _, ...userSansMotDePasse } = user.toObject();
+    res.status(200).json(userSansMotDePasse);
+  } catch (err) {
+    console.error("❌ Erreur lors de la connexion :", err);
+    res.status(500).json({ error: "Erreur serveur." });
   }
 });
 
