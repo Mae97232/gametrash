@@ -24,52 +24,44 @@
       <p>Pas encore de compte ? <a href="inscription.html">Créez-en un ici</a></p>
       <p><a href="mot-de-passe-oublie.html">Mot de passe oublié ?</a></p>
     </form>
-
-    <!-- Inscription -->
-    <form id="signup-form" style="display: none;">
-      <h2>Inscription</h2>
-      <label for="email-signup">Email :</label>
-      <input type="email" id="email-signup" required placeholder="Votre email">
-
-      <label for="password-signup">Mot de passe :</label>
-      <input type="password" id="password-signup" required placeholder="Choisir un mot de passe">
-
-      <label for="confirm-password">Confirmer le mot de passe :</label>
-      <input type="password" id="confirm-password" required placeholder="Confirmer le mot de passe">
-
-      <button type="submit">S'inscrire</button>
-
-      <p>Déjà un compte ? <a href="#" id="show-login-form">Se connecter ici</a></p>
-    </form>
   </div>
 
-  <script src="script.js"></script>
-    <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const loginForm = document.getElementById("login-form");
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const loginForm = document.getElementById("login-form");
 
-    loginForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
+      loginForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
 
-      // On récupère les utilisateurs du localStorage
-      const utilisateurs = JSON.parse(localStorage.getItem('utilisateurs')) || [];
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
 
-      // On cherche l'utilisateur qui correspond
-      const utilisateur = utilisateurs.find(u => u.email === email && u.password === password);
+        try {
+          const response = await fetch("https://ton-backend.onrender.com/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ email, password })
+          });
 
-      if (utilisateur) {
-        // Connexion réussie : on enregistre l'utilisateur connecté
-        localStorage.setItem('utilisateurConnecte', JSON.stringify(utilisateur));
-        // Redirige vers l'espace client
-        window.location.href = "espace-mon-client.html";
-      } else {
-        alert("Email ou mot de passe incorrect.");
-      }
+          const data = await response.json();
+
+          if (response.ok) {
+            // Sauvegarde de l'utilisateur connecté (sans le mot de passe)
+            localStorage.setItem("utilisateurConnecte", JSON.stringify(data));
+            // Redirection
+            window.location.href = "espace-mon-client.html";
+          } else {
+            alert(data.error || "Erreur lors de la connexion.");
+          }
+
+        } catch (error) {
+          console.error("Erreur réseau :", error);
+          alert("Erreur réseau ou serveur. Veuillez réessayer.");
+        }
+      });
     });
-  });
-</script>
-
+  </script>
 </body>
 </html>
