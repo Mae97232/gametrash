@@ -18,7 +18,7 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
 
 // Middleware
-app.use(cors({ origin: 'https://mae97232.github.io' }));
+app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -44,15 +44,23 @@ app.post('/register', async (req, res) => {
 // Route de connexion
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
-  
-  console.log(`Tentative de connexion avec l'email : ${email}`); // Ajout du log ici
+
+  console.log("Tentative de connexion");
+  console.log("Email reçu :", email);
+  console.log("Mot de passe reçu :", password);
 
   try {
     const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ error: "Email ou mot de passe incorrect." });
+    if (!user) {
+      console.log("Utilisateur non trouvé.");
+      return res.status(401).json({ error: "Email ou mot de passe incorrect." });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ error: "Email ou mot de passe incorrect." });
+    if (!isMatch) {
+      console.log("Mot de passe incorrect.");
+      return res.status(401).json({ error: "Email ou mot de passe incorrect." });
+    }
 
     const { password: _, ...userSansMotDePasse } = user.toObject();
     res.status(200).json(userSansMotDePasse);

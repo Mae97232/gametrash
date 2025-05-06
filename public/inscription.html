@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -30,121 +30,92 @@
   <script>
     const form = document.getElementById('form-inscription');
     const message = document.getElementById('message');
-  
-    form.addEventListener('submit', function (e) {
+
+    // Choix automatique de l'URL API
+    const API_URL = window.location.hostname === "localhost"
+      ? "http://localhost:10000"
+      : "https://gametrash.onrender.com";
+
+    form.addEventListener('submit', async function (e) {
       e.preventDefault();
-  
-      const nom = document.getElementById('nom').value.trim();
-      const prénom = document.getElementById('prénom').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
+
+      const utilisateur = {
+        nom: document.getElementById('nom').value.trim(),
+        prénom: document.getElementById('prénom').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        password: document.getElementById('password').value,
+        telephone: document.getElementById('telephone').value.trim(),
+        adresse: document.getElementById('adresse').value.trim(),
+        ville: document.getElementById('ville').value.trim(),
+        codePostal: document.getElementById('codePostal').value.trim(),
+        naissance: document.getElementById('naissance').value
+      };
+
       const confirmPassword = document.getElementById('confirm-password').value;
-      const telephone = document.getElementById('telephone').value.trim();
-      const adresse = document.getElementById('adresse').value.trim();
-      const ville = document.getElementById('ville').value.trim();
-      const codePostal = document.getElementById('codePostal').value.trim();
-      const naissance = document.getElementById('naissance').value;
-  
-      if (!nom || !prénom || !email || !password || !confirmPassword || !telephone || !adresse || !ville || !codePostal || !naissance) {
+
+      // Vérification des champs
+      if (Object.values(utilisateur).some(value => !value) || !confirmPassword) {
         message.textContent = "Veuillez remplir tous les champs.";
         message.style.color = "red";
         return;
       }
-  
-      if (password !== confirmPassword) {
+
+      if (utilisateur.password !== confirmPassword) {
         message.textContent = "Les mots de passe ne correspondent pas.";
         message.style.color = "red";
         return;
       }
-  
-      const utilisateur = {
-        nom,
-        prénom,
-        email,
-        password,
-        telephone,
-        adresse,
-        ville,
-        codePostal,
-        naissance
-      };
-  
-      // 🔁 Enregistrement via la route /register
-      fetch('https://gametrash.onrender.com/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(utilisateur)
-      })
-        .then(async response => {
-          const contentType = response.headers.get('content-type');
-          if (!response.ok) {
-            if (contentType && contentType.includes('application/json')) {
-              const error = await response.json();
-              throw new Error(error.error || 'Erreur inconnue');
-            } else {
-              const text = await response.text();
-              throw new Error('Réponse inattendue du serveur : ' + text.slice(0, 100));
-            }
-          }
-          return response.json();
-        })
-        .then(() => {
-          console.log('✅ Utilisateur enregistré dans la base');
-          return fetch('https://gametrash.onrender.com/send-email', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              to: email,
-              subject: "Bienvenue chez GameTrash 🎮",
-              html: `
-                <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f7f7f7;">
-                  <h2 style="color: #333;">Bienvenue ${prénom} ${nom} !</h2>
-                  <p>Merci pour votre inscription chez <strong>GameTrash</strong> 🎮.</p>
-                  <h3>Voici vos informations :</h3>
-                  <ul>
-                    <li><strong>Téléphone :</strong> ${telephone}</li>
-                    <li><strong>Adresse :</strong> ${adresse}, ${ville}, ${codePostal}</li>
-                    <li><strong>Date de naissance :</strong> ${naissance}</li>
-                  </ul>
-                  <p style="margin-top:20px;">Nous avons hâte de vous faire découvrir nos meilleurs jeux rétro !</p>
-                  <p>À très vite,<br><strong>L'équipe GameTrash</strong> 🎮</p>
-                </div>
-              `
-            })
-          });
-        })
-        .then(async response => {
-          console.log('👉 Réponse brute :', response);
-          const contentType = response.headers.get('content-type');
-          if (!response.ok) {
-            if (contentType && contentType.includes('application/json')) {
-              const error = await response.json();
-              throw new Error(error.error || 'Erreur inconnue');
-            } else {
-              const text = await response.text();
-              throw new Error('Réponse inattendue du serveur : ' + text.slice(0, 100));
-            }
-          }
-          return response.json();
-        })
-        .then(() => {
-          message.textContent = "Inscription réussie ! Un email vous a été envoyé.";
-          message.style.color = "green";
-          setTimeout(() => {
-            window.location.href = 'espace-mon-client.html';
-          }, 2000);
-        })
-        .catch(error => {
-          console.error('🚨 Erreur :', error);
-          message.textContent = error.message;
-          message.style.color = "red";
+
+      try {
+        // Étape 1 : enregistrement en base
+        const res1 = await fetch(`${API_URL}/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(utilisateur)
         });
+
+        if (!res1.ok) {
+          const err = await res1.json();
+          throw new Error(err.error || "Erreur lors de l'inscription.");
+        }
+
+        console.log('✅ Utilisateur enregistré');
+
+        // Étape 2 : envoi d'email de bienvenue
+        await fetch(`${API_URL}/send-email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: utilisateur.email,
+            subject: "Bienvenue chez GameTrash 🎮",
+            html: `
+              <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f7f7f7;">
+                <h2 style="color: #333;">Bienvenue ${utilisateur.prénom} ${utilisateur.nom} !</h2>
+                <p>Merci pour votre inscription chez <strong>GameTrash</strong> 🎮.</p>
+                <ul>
+                  <li><strong>Téléphone :</strong> ${utilisateur.telephone}</li>
+                  <li><strong>Adresse :</strong> ${utilisateur.adresse}, ${utilisateur.ville}, ${utilisateur.codePostal}</li>
+                  <li><strong>Date de naissance :</strong> ${utilisateur.naissance}</li>
+                </ul>
+                <p>Nous avons hâte de vous faire découvrir nos meilleurs jeux rétro !</p>
+                <p>À très vite,<br><strong>L'équipe GameTrash</strong> 🎮</p>
+              </div>
+            `
+          })
+        });
+
+        message.textContent = "Inscription réussie ! Un email vous a été envoyé.";
+        message.style.color = "green";
+        setTimeout(() => {
+          window.location.href = 'espace-mon-client.html';
+        }, 2000);
+
+      } catch (error) {
+        console.error('🚨 Erreur :', error);
+        message.textContent = error.message;
+        message.style.color = "red";
+      }
     });
   </script>
-
 </body>
 </html>
