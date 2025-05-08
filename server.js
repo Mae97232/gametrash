@@ -4,7 +4,7 @@ const nodemailer = require('nodemailer');
 const Stripe = require('stripe');
 const path = require('path');
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs'); // ← Remplacement ici
 require('dotenv').config();
 
 // Initialisation
