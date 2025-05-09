@@ -10,14 +10,14 @@
 </head>
 <body>
 
-  <!-- ✅ NAVIGATION + MENU BURGER -->
+  <!-- ✅ NAVIGATION -->
   <nav class="navbar">
     <a href="index.html" class="logo">Game Trash</a>
     <div class="menu-burger" onclick="toggleMenu(this)">
-      <div class="bar"></div>
-      <div class="bar"></div>
-      <div class="bar"></div>
-    </div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+     </div>
     <ul class="nav-links" id="navLinks">
       <li><a href="index.html">Accueil</a></li>
       <li><a href="produit.html">GameBoy Noir</a></li>
@@ -29,23 +29,34 @@
     </ul>
   </nav>
 
-  <!-- ✅ Titre de page -->
+  <!-- ✅ Titre -->
   <h1 class="titre-page">GameBoy Orange</h1>
 
-  <!-- ✅ Produit -->
-  <div class="produit">
-    <img src="images/Gameboy-orange.jpg" alt="GameBoy orange">
-    <h2>GameBoy Orange</h2>
-    <p class="description">
-      Redécouvrez la légende ! 🎮  
-      Cette GameBoy classique remise à neuf vous replonge dans l’âge d’or du rétro-gaming. Compacte, robuste et 100% fonctionnelle – idéale pour les passionnés et les collectionneurs !
-    </p>
-    <p class="prix">89€</p>
-    <button class="btn-achat">Acheter</button>
-    <button class="btn-achat" onclick="ajouterAuPanier('GameBoy Orange', 89, 'images/Gameboy-orange.jpg')">Ajouter au panier</button>
+  <!-- ✅ Produit stylisé -->
+  <div class="product-container">
+    <div class="product-image">
+      <img src="images/Gameboy-red.webp" alt="GameBoy Orange">
+    </div>
+
+    <div class="product-details">
+      <h2>GameBoy Orange</h2>
+      <p class="description">
+        Redécouvrez la légende ! 🎮  
+        Cette GameBoy classique remise à neuf vous replonge dans l’âge d’or du rétro-gaming. Compacte, robuste et 100% fonctionnelle – idéale pour les passionnés et les collectionneurs !
+      </p>
+      <p class="prix">89€</p>
+
+      <div class="quantity-selector">
+        <button class="qty-btn" onclick="changerQuantite(-1)">–</button>
+        <input type="number" id="quantite" value="1" min="1" readonly>
+        <button class="qty-btn" onclick="changerQuantite(1)">+</button>
+      </div>
+
+      <button class="add-to-cart" onclick="ajouterAuPanier('GameBoy Orange', 89, 'images/Gameboy-orange.jpg')">Ajouter au panier</button>
+    </div>
   </div>
 
-  <!-- ✅ Section Avis -->
+  <!-- ✅ AVIS -->
   <section class="avis-section">
     <h2>Laissez votre avis</h2>
     <form id="avisForm">
@@ -72,13 +83,14 @@
     </div>
   </section>
 
-  <!-- ✅ Pied de page -->
+  <!-- ✅ FOOTER -->
   <footer>
     <div id="flexbox-foot">
       <div id="logo-foot">
         <img src="images/game2.png" alt="Logo">
         <span class="footer-logo-text">Game Trash</span>
       </div>
+
       <div class="footer-links">
         <ul>
           <li><a href="a-propos.html">À propos</a></li>
@@ -86,27 +98,45 @@
           <li><a href="#">Contact</a></li>
         </ul>
       </div>
+     
       <div class="footer-bottom">
         <p>&copy; 2025 Game Trash. Tous droits réservés.</p>
       </div>
     </div>
   </footer>
 
+  <!-- ✅ Script -->
   <script>
-     function ajouterAuPanier(produit3) {
-      let panier = JSON.parse(localStorage.getItem('panier')) || [];
-      panier.push(produit);
-      localStorage.setItem('panier', JSON.stringify(panier));
-      alert("Produit ajouté au panier !");
-     }
-    // ✅ MENU BURGER
     function toggleMenu(burger) {
       burger.classList.toggle("active");
-      const nav = document.getElementById("navLinks");
-      nav.classList.toggle("show");
+      document.getElementById("navLinks").classList.toggle("show");
     }
 
-    // ✅ COMPTEUR PANIER
+    function changerQuantite(val) {
+      const input = document.getElementById("quantite");
+      let current = parseInt(input.value);
+      if (!isNaN(current)) {
+        let newVal = current + val;
+        if (newVal >= 1) input.value = newVal;
+      }
+    }
+
+    function ajouterAuPanier(nom, prix, image) {
+      let quantite = parseInt(document.getElementById("quantite").value) || 1;
+      let panier = JSON.parse(localStorage.getItem("panier")) || [];
+      const produitExistant = panier.find(item => item.nom === nom);
+
+      if (produitExistant) {
+        produitExistant.quantite += quantite;
+      } else {
+        panier.push({ nom, prix, image, quantite });
+      }
+
+      localStorage.setItem("panier", JSON.stringify(panier));
+      mettreAJourCompteurPanier();
+      alert("Produit ajouté au panier !");
+    }
+
     function mettreAJourCompteurPanier() {
       const panier = JSON.parse(localStorage.getItem("panier")) || [];
       const totalArticles = panier.reduce((acc, item) => acc + item.quantite, 0);
@@ -116,7 +146,6 @@
 
     mettreAJourCompteurPanier();
 
-    // ✅ FORMULAIRE AVIS
     const form = document.getElementById("avisForm");
     const listeAvis = document.getElementById("listeAvis");
     let avisArray = [];
@@ -154,28 +183,7 @@
 
       listeAvis.innerHTML = "<h3>Avis des clients</h3>" + avisHtml;
     }
-
-    // ✅ AJOUTER AU PANIER
-    function ajouterAuPanier(nom, prix, image) {
-      let panier = JSON.parse(localStorage.getItem("panier")) || [];
-
-      const produitExistant = panier.find(item => item.nom === nom);
-
-      if (produitExistant) {
-        produitExistant.quantite++;
-      } else {
-        panier.push({
-          nom: nom,
-          prix: prix,
-          image: image,
-          quantite: 1
-        });
-      }
-
-      localStorage.setItem("panier", JSON.stringify(panier));
-      mettreAJourCompteurPanier();
-      alert("Produit ajouté au panier !");
-    }
   </script>
+
 </body>
 </html>
