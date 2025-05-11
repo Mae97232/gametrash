@@ -1782,3 +1782,16 @@ a:hover {
 .contact-info a:hover {
    text-decoration: underline;
 }
+
+/* Si ta navbar a une hauteur de 80px */
+body {
+   padding-top: 80px; /* décale le contenu vers le bas */
+}
+
+.navbar {
+   position: fixed;
+   top: 0;
+   width: 100%;
+   z-index: 1000;
+   background-color: #000; /* optionnel : pour éviter la transparence */
+}
