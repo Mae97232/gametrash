@@ -53,6 +53,33 @@
       </div>
 
       <button class="add-to-cart" onclick="ajouterAuPanier('GameBoy Rouge', 89, 'images/Gameboy-red.webp')">Ajouter au panier</button>
+           <section class="caracteristiques-techniques conteneur">
+   <button class="toggle-btn">Voir les caractéristiques techniques</button>
+   <div class="caracteristiques-contenu">
+      <ul>
+         <li><strong>Écran :</strong> IPS 3,5 pouces - 640x480 pixels</li>
+         <li><strong>Processeur :</strong> RK3326 Quad-Core ARM Cortex-A35</li>
+         <li><strong>Mémoire vive :</strong> 1 Go DDR3L</li>
+         <li><strong>Stockage :</strong> Carte microSD 64 Go avec +10 000 jeux</li>
+         <li><strong>Batterie :</strong> 3500 mAh – jusqu’à 6h d’autonomie</li>
+         <li><strong>Connectivité :</strong> USB-C, sortie HDMI</li>
+         <li><strong>Système :</strong> Linux open-source (ArkOS, EmuELEC, etc.)</li>
+         <li><strong>Compatibilité :</strong> NES, SNES, GBA, PS1, MAME, Neo Geo, etc.</li>
+      </ul>
+   </div>
+    <button class="accordion-btn">📦 Contenu de la boîte</button>
+<div class="accordion-content">
+   <ul>
+      <li><strong>Console R36S</strong></li>
+      <li><strong>Carte microSD</strong> préchargée avec plus de 15 000 jeux</li>
+      <li><strong>Câble USB-C</strong> pour la recharge</li>
+      <li><strong>Manuel d'utilisation</strong></li>
+      <li><strong>Protection d'écran</strong></li>
+   </ul>
+</div>
+</section>
+    </div>
+  </div>
     </div>
   </div>
 
@@ -83,28 +110,43 @@
     </div>
   </section>
 
-  <!-- ✅ FOOTER -->
-  <footer>
-    <div id="flexbox-foot">
-      <div id="logo-foot">
-        <img src="images/game2.png" alt="Logo">
-        <span class="footer-logo-text">Game Trash</span>
+   <!-- ✅ FOOTER -->
+  <footer class="footer">
+   <div class="footer-container">
+      <!-- Logo + Slogan -->
+      <div class="footer-section logo-section">
+         <img src="images/game2.png" alt="Game Trash Logo" class="footer-logo">
+         <p class="footer-brand">Game Trash</p>
+         <p class="footer-slogan">L’expert des GameBoy – Nostalgie garantie</p>
       </div>
 
-      <div class="footer-links">
-        <ul>
-          <li><a href="a-propos.html">À propos</a></li>
-          <li><a href="faq.html">FAQ</a></li>
-          <li><a href="#">Contact</a></li>
-        </ul>
+      <!-- Liens utiles -->
+      <div class="footer-section links-section">
+         <h4>Liens utiles</h4>
+         <ul>
+            <li><a href="a-propos.html">À propos</a></li>
+            <li><a href="faq.html">FAQ</a></li>
+            <li><a href="contact.html">Contact</a></li>
+         </ul>
       </div>
-     
-      <div class="footer-bottom">
-        <p>&copy; 2025 Game Trash. Tous droits réservés.</p>
-      </div>
-    </div>
-  </footer>
 
+      <!-- Paiement -->
+      <div class="footer-section paiement-section">
+         <h4>Paiement sécurisé</h4>
+         <div class="paiement-logos">
+            <img src="images/paypal logo.png" alt="PayPal">
+            <img src="images/visa logo.png" alt="Visa">
+            <img src="images/mastercard logo.png" alt="MasterCard">
+            <img src="images/apple-pay logo.png" alt="Apple Pay">
+         </div>
+      </div>
+   </div>
+
+   <div class="footer-bottom">
+      <p>&copy; 2025 Game Trash. Tous droits réservés.</p>
+   </div>
+</footer>
+   <script src="public/script.js"></script>
   <!-- ✅ Script -->
   <script>
     function toggleMenu(burger) {
@@ -183,6 +225,25 @@
 
       listeAvis.innerHTML = "<h3>Avis des clients</h3>" + avisHtml;
     }
+
+     document.querySelector('.toggle-btn').addEventListener('click', function() {
+      const contenu = document.querySelector('.caracteristiques-contenu');
+      if (contenu.style.display === 'block') {
+         contenu.style.display = 'none';
+         this.textContent = 'Voir les caractéristiques techniques';
+      } else {
+         contenu.style.display = 'block';
+         this.textContent = 'Masquer les caractéristiques techniques';
+      }
+   });
+
+     const accordionButtons = document.querySelectorAll(".accordion-btn");
+   accordionButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+         const content = btn.nextElementSibling;
+         content.classList.toggle("show");
+      });
+   });
   </script>
 
 </body>

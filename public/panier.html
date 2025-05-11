@@ -31,24 +31,42 @@
   <h1 class="titre-page">Votre Panier</h1>
   <div id="panierContainer" style="padding: 2rem;"></div>
 
-  <footer>
-    <div id="flexbox-foot">
-      <div id="logo-foot">
-        <img src="images/game2.png" alt="Logo">
-        <span class="footer-logo-text">Game Trash</span>
+  <!-- ✅ FOOTER -->
+  <footer class="footer">
+   <div class="footer-container">
+      <!-- Logo + Slogan -->
+      <div class="footer-section logo-section">
+         <img src="images/game2.png" alt="Game Trash Logo" class="footer-logo">
+         <p class="footer-brand">Game Trash</p>
+         <p class="footer-slogan">L’expert des GameBoy – Nostalgie garantie</p>
       </div>
-      <div class="footer-links">
-        <ul>
-          <li><a href="a-propos.html">À propos</a></li>
-          <li><a href="faq.html">FAQ</a></li>
-          <li><a href="#">Contact</a></li>
-        </ul>
+
+      <!-- Liens utiles -->
+      <div class="footer-section links-section">
+         <h4>Liens utiles</h4>
+         <ul>
+            <li><a href="a-propos.html">À propos</a></li>
+            <li><a href="faq.html">FAQ</a></li>
+            <li><a href="contact.html">Contact</a></li>
+         </ul>
       </div>
-      <div class="footer-bottom">
-        <p>&copy; 2025 Game Trash. Tous droits réservés.</p>
+
+      <!-- Paiement -->
+      <div class="footer-section paiement-section">
+         <h4>Paiement sécurisé</h4>
+         <div class="paiement-logos">
+            <img src="images/paypal logo.png" alt="PayPal">
+            <img src="images/visa logo.png" alt="Visa">
+            <img src="images/mastercard logo.png" alt="MasterCard">
+            <img src="images/apple-pay logo.png" alt="Apple Pay">
+         </div>
       </div>
-    </div>
-  </footer>
+   </div>
+
+   <div class="footer-bottom">
+      <p>&copy; 2025 Game Trash. Tous droits réservés.</p>
+   </div>
+</footer>
 
   <script>
     function toggleMenu(burger) {

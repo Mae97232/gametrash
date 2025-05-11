@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <title>Mon premier site</title>
+   <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
+   <link rel="stylesheet" href="design/style.css" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+   <!-- ✅ NAVBAR -->
+   <nav class="navbar">
+      <div class="logo-texte">
+         <img src="images/game2.png" alt="Logo Game Trash" class="logo-header" />
+         <div class="texte-header">
+            <h1>Game Trash</h1>
+            <span class="slogan">L'expert des GameBoy – La nostalgie au creux de vos mains</span>
+         </div>
+      </div>
+      <div class="menu-burger" onclick="toggleMenu(this)">
+         <div class="bar"></div>
+         <div class="bar"></div>
+         <div class="bar"></div>
+      </div>
+      <ul class="nav-links" id="navLinks">
+         <li><a href="index.html">Accueil</a></li>
+         <li><a href="produit.html">GameBoy Noire</a></li>
+         <li><a href="produit2.html">GameBoy Rouge</a></li>
+         <li><a href="produit3.html">GameBoy Orange</a></li>
+         <li><a href="produit4.html">GameBoy Violet</a></li>
+         <li><a href="panier.html">🛒 Panier <span id="panierCount">(0)</span></a></li>
+         <li><a href="espace-mon-client.html"><i class="fas fa-user"></i> Espace client</a></li>
+      </ul>
+   </nav>
+
+   <!-- ✅ SECTION CONTACT -->
+   <section class="conteneur contact-section">
+      <h1>Contactez-nous</h1>
+      <p class="contact-intro">Une question, un problème, une demande particulière ? Remplissez ce formulaire et on revient vers vous rapidement !</p>
+
+     <form class="contact-form" method="POST" action="https://formsubmit.co/gametrash.contact@gmail.com">
+   <input type="hidden" name="_captcha" value="false">
+   <input type="hidden" name="_template" value="box">
+   <input type="hidden" name="_autoresponse" value="Merci pour votre message ! Nous vous répondrons dans un délai de 24h à 48h.">
+
+   <div class="form-group">
+      <label for="nom">Nom</label>
+      <input type="text" id="nom" name="Nom" required>
+   </div>
+
+   <div class="form-group">
+      <label for="email">Adresse email</label>
+      <input type="email" id="email" name="Email" required>
+   </div>
+
+   <div class="form-group">
+      <label for="sujet">Sujet</label>
+      <input type="text" id="sujet" name="Sujet" required>
+   </div>
+
+   <div class="form-group">
+      <label for="message">Message</label>
+      <textarea id="message" name="Message" rows="5" required></textarea>
+   </div>
+
+   <p style="color: #aaa; font-size: 0.9rem; margin-top: 10px;">
+      ✅ Nous répondons généralement sous 24h à 48h.
+   </p>
+   <div class="contact-info">
+   <p><strong>Adresse e-mail :</strong> <a href="mailto:gameboy.contact@gmail.com">gameboy.contact@gmail.com</a></p>
+
+</div>
+
+   <button type="submit" class="btn-contact">Envoyer le message</button>
+</form>
+   </section>
+
+      <!-- ✅ FOOTER -->
+  <footer class="footer">
+   <div class="footer-container">
+      <!-- Logo + Slogan -->
+      <div class="footer-section logo-section">
+         <img src="images/game2.png" alt="Game Trash Logo" class="footer-logo">
+         <p class="footer-brand">Game Trash</p>
+         <p class="footer-slogan">L’expert des GameBoy – Nostalgie garantie</p>
+      </div>
+
+      <!-- Liens utiles -->
+      <div class="footer-section links-section">
+         <h4>Liens utiles</h4>
+         <ul>
+            <li><a href="a-propos.html">À propos</a></li>
+            <li><a href="faq.html">FAQ</a></li>
+            <li><a href="#">Contact</a></li>
+         </ul>
+      </div>
+
+      <!-- Paiement -->
+      <div class="footer-section paiement-section">
+         <h4>Paiement sécurisé</h4>
+         <div class="paiement-logos">
+            <img src="images/paypal logo.png" alt="PayPal">
+            <img src="images/visa logo.png" alt="Visa">
+            <img src="images/mastercard logo.png" alt="MasterCard">
+            <img src="images/apple-pay logo.png" alt="Apple Pay">
+         </div>
+      </div>
+   </div>
+
+   <div class="footer-bottom">
+      <p>&copy; 2025 Game Trash. Tous droits réservés.</p>
+   </div>
+</footer>
+   <script src="public/script.js"></script>
+
+   <script>
+      function toggleMenu(burger) {
+         burger.classList.toggle("active");
+         const nav = document.getElementById("navLinks");
+         nav.classList.toggle("show");
+      }
+    </script>
+
+</body>
+</html>
