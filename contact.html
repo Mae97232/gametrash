@@ -12,13 +12,12 @@
 <body>
    <!-- ✅ NAVBAR -->
    <nav class="navbar">
-   <a href="index.html" class="logo-texte">
-      <img src="images/game2.png" alt="Logo Game Trash" class="logo-header" />
-      <div class="texte-header">
-         <h1>Game Trash</h1>
-         <span class="slogan">L'expert des GameBoy – La nostalgie au creux de vos mains</span>
-      </div>
-   </a>
+      <div class="logo-texte">
+         <img src="images/game2.png" alt="Logo Game Trash" class="logo-header" />
+         <div class="texte-header">
+            <h1>Game Trash</h1>
+            <span class="slogan">L'expert des GameBoy – La nostalgie au creux de vos mains</span>
+         </div>
       </div>
       <div class="menu-burger" onclick="toggleMenu(this)">
          <div class="bar"></div>
@@ -36,20 +35,49 @@
       </ul>
    </nav>
 
-  <!-- ✅ Section À propos -->
-  <section class="apropos-page">
-    <div class="conteneur-apropos">
-      <div class="texte-apropos">
-        <h2>Notre histoire</h2>
-        <p>Chez <strong>GameBoyStore</strong>, on ne vend pas juste des consoles. On partage une passion...</p>
-        <p>Chaque GameBoy est reconditionnée avec amour, pour que la magie d'hier vous revienne entre les mains.</p>
-        <p>Depuis notre création, nous avons aidé des milliers de fans à revivre leurs souvenirs, pixel après pixel.</p>
-      </div>
-      <div class="image-apropos"></div>
-    </div>
-  </section>
+   <!-- ✅ SECTION CONTACT -->
+   <section class="conteneur contact-section">
+      <h1>Contactez-nous</h1>
+      <p class="contact-intro">Une question, un problème, une demande particulière ? Remplissez ce formulaire et on revient vers vous rapidement !</p>
 
-  <!-- ✅ FOOTER -->
+     <form class="contact-form" method="POST" action="https://formsubmit.co/gametrash.contact@gmail.com">
+   <input type="hidden" name="_captcha" value="false">
+   <input type="hidden" name="_template" value="box">
+   <input type="hidden" name="_autoresponse" value="Merci pour votre message ! Nous vous répondrons dans un délai de 24h à 48h.">
+
+   <div class="form-group">
+      <label for="nom">Nom</label>
+      <input type="text" id="nom" name="Nom" required>
+   </div>
+
+   <div class="form-group">
+      <label for="email">Adresse email</label>
+      <input type="email" id="email" name="Email" required>
+   </div>
+
+   <div class="form-group">
+      <label for="sujet">Sujet</label>
+      <input type="text" id="sujet" name="Sujet" required>
+   </div>
+
+   <div class="form-group">
+      <label for="message">Message</label>
+      <textarea id="message" name="Message" rows="5" required></textarea>
+   </div>
+
+   <p style="color: #aaa; font-size: 0.9rem; margin-top: 10px;">
+      ✅ Nous répondons généralement sous 24h à 48h.
+   </p>
+   <div class="contact-info">
+   <p><strong>Adresse e-mail :</strong> <a href="mailto:gameboy.contact@gmail.com">gameboy.contact@gmail.com</a></p>
+
+</div>
+
+   <button type="submit" class="btn-contact">Envoyer le message</button>
+</form>
+   </section>
+
+      <!-- ✅ FOOTER -->
   <footer class="footer">
    <div class="footer-container">
       <!-- Logo + Slogan -->
@@ -65,7 +93,7 @@
          <ul>
             <li><a href="a-propos.html">À propos</a></li>
             <li><a href="faq.html">FAQ</a></li>
-            <li><a href="contact.html">Contact</a></li>
+            <li><a href="#">Contact</a></li>
          </ul>
       </div>
 
@@ -85,28 +113,15 @@
       <p>&copy; 2025 Game Trash. Tous droits réservés.</p>
    </div>
 </footer>
+   <script src="public/script.js"></script>
 
-  <!-- ✅ Script -->
-  <script>
-    function toggleMenu(burger) {
-      burger.classList.toggle("active");
-      document.getElementById("navLinks").classList.toggle("show");
-    }
-
-    document.addEventListener("DOMContentLoaded", function () {
-      const navLinks = document.querySelectorAll(".nav-links a");
-      navLinks.forEach(link => {
-        link.addEventListener("click", () => {
-          const nav = document.getElementById("navLinks");
-          const burger = document.querySelector(".menu-burger");
-          if (nav.classList.contains("show")) {
-            nav.classList.remove("show");
-            burger.classList.remove("active");
-          }
-        });
-      });
-    });
-  </script>
+   <script>
+      function toggleMenu(burger) {
+         burger.classList.toggle("active");
+         const nav = document.getElementById("navLinks");
+         nav.classList.toggle("show");
+      }
+    </script>
 
 </body>
 </html>
