@@ -232,3 +232,37 @@ ${orderDetails}`
 app.listen(PORT, () => {
   console.log(`✅ Serveur démarré sur http://localhost:${PORT}`);
 });
+
+const bodyParser = require('body-parser'); // Ajoute ça en haut si pas encore présent
+
+// Stripe nécessite le "raw body" pour valider la signature du webhook
+app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+  } catch (err) {
+    console.error('❌ Erreur de vérification du webhook :', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // ✅ Événement reçu et vérifié
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+
+    // Affiche les infos de la commande dans la console pour test
+    console.log('✅ Paiement réussi :');
+    console.log('Nom du client :', session.customer_details.name);
+    console.log('Email :', session.customer_details.email);
+    console.log('Téléphone :', session.customer_details.phone);
+    console.log('Adresse :', session.customer_details.address);
+    console.log('Produits commandés :', session.display_items || session.line_items);
+
+    // Tu peux ici envoyer les emails avec nodemailer si tu veux
+  }
+
+  res.status(200).send('✅ Webhook reçu avec succès');
+});
