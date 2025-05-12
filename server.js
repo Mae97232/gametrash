@@ -102,7 +102,7 @@ app.post('/send-email', async (req, res) => {
   }
 });
 
-// Route Stripe
+// Route Stripe pour créer la session de paiement
 app.post('/create-checkout-session', async (req, res) => {
   const { items } = req.body;
 
@@ -129,6 +129,103 @@ app.post('/create-checkout-session', async (req, res) => {
     console.error('Erreur Stripe :', error);
     res.status(500).json({ error: 'Erreur lors de la création de la session de paiement.' });
   }
+});
+
+// Webhook Stripe pour gérer les événements de paiement
+app.post('/webhook-stripe', express.raw({ type: 'application/json' }), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET; // Votre secret webhook Stripe
+
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+  } catch (err) {
+    console.log('Erreur de signature :', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // Gérer l'événement 'checkout.session.completed'
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+
+    // Informations sur le client
+    const clientName = session.customer_details.name;
+    const clientEmail = session.customer_details.email;
+    const clientPhone = session.customer_details.phone;
+    const clientAddress = session.customer_details.address;
+
+    // Récupérer les articles de la commande
+    const orderItems = session.line_items.data;
+    let orderDetails = '';
+    orderItems.forEach(item => {
+      orderDetails += `${item.quantity} x ${item.description}\n`;
+    });
+
+    // Créer le contenu de l'email pour l'administrateur
+    const adminMailOptions = {
+      from: process.env.BREVO_USER, // Votre email d'expéditeur
+      to: 'yorickspprt@gmail.com',  // L'email de l'administrateur
+      subject: 'Nouvelle commande reçue',
+      text: `Nouvelle commande reçue :
+
+Nom du client : ${clientName}
+Email : ${clientEmail}
+Téléphone : ${clientPhone}
+Adresse : ${clientAddress}
+Détails de la commande :
+${orderDetails}`
+    };
+
+    // Créer le contenu de l'email pour le fournisseur
+    const supplierMailOptions = {
+      from: process.env.BREVO_USER, // Votre email d'expéditeur
+      to: 'service@qbuytech.com',  // L'email du fournisseur
+      subject: 'Commande à préparer',
+      text: `Nouvelle commande à expédier :
+
+Nom du client : ${clientName}
+Téléphone : ${clientPhone}
+Adresse : ${clientAddress}
+Détails de la commande :
+${orderDetails}`
+    };
+
+    // Envoyer l'email à l'administrateur
+    nodemailer.createTransport({
+      host: "smtp-relay.brevo.com",
+      port: 587,
+      auth: {
+        user: process.env.BREVO_USER,
+        pass: process.env.BREVO_PASS
+      }
+    }).sendMail(adminMailOptions, (err, info) => {
+      if (err) {
+        console.log('Erreur en envoyant l\'email à l\'admin :', err);
+      } else {
+        console.log('Email envoyé à l\'admin :', info.response);
+      }
+    });
+
+    // Envoyer l'email au fournisseur
+    nodemailer.createTransport({
+      host: "smtp-relay.brevo.com",
+      port: 587,
+      auth: {
+        user: process.env.BREVO_USER,
+        pass: process.env.BREVO_PASS
+      }
+    }).sendMail(supplierMailOptions, (err, info) => {
+      if (err) {
+        console.log('Erreur en envoyant l\'email au fournisseur :', err);
+      } else {
+        console.log('Email envoyé au fournisseur :', info.response);
+      }
+    });
+  }
+
+  // Répondre à Stripe pour dire que le webhook a été reçu avec succès
+  res.status(200).send('Webhook reçu');
 });
 
 // Lancement du serveur
