@@ -144,13 +144,13 @@ app.post('/webhook-stripe', express.raw({ type: 'application/json' }), async (re
       const client = session.customer_details;
       const clientName = client.name;
       const clientEmail = client.email;
-      const clientPhone = client.phone || 'Non fourni';
+      const clientPhone = client.phone || 'Non fourni';  // Valeur par défaut si non fournie
       const address = client.address;
       const addressStr = `${address.line1}, ${address.postal_code}, ${address.city}, ${address.country}`;
 
       let produits = '';
       lineItems.data.forEach(item => {
-        produits += `<li>${item.quantity} x ${item.description}</li>`;
+        produits += `<li>${item.quantity} x ${item.description} (${item.price.unit_amount / 100} EUR)</li>`;
       });
 
       const emailContent = `
@@ -163,6 +163,7 @@ app.post('/webhook-stripe', express.raw({ type: 'application/json' }), async (re
         <ul>${produits}</ul>
       `;
 
+      // Création du transporteur avec Brevo
       const transporter = nodemailer.createTransport({
         host: "smtp-relay.brevo.com",
         port: 587,
@@ -175,7 +176,7 @@ app.post('/webhook-stripe', express.raw({ type: 'application/json' }), async (re
       // Email à toi
       await transporter.sendMail({
         from: process.env.BREVO_USER,
-        to: "yorickspprt@gmail.com",
+        to: "yorickspprt@gmail.com",  // Ton email
         subject: "Nouvelle commande client",
         html: emailContent
       });
@@ -183,7 +184,7 @@ app.post('/webhook-stripe', express.raw({ type: 'application/json' }), async (re
       // Email au fournisseur
       await transporter.sendMail({
         from: process.env.BREVO_USER,
-        to: "service@qbuytech.com",
+        to: "service@qbuytech.com",  // Email du fournisseur
         subject: "Commande à expédier",
         html: emailContent
       });
