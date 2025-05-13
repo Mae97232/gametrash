@@ -5,9 +5,9 @@ const Stripe = require('stripe');
 const path = require('path');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const bodyParser = require('body-parser');
 require('dotenv').config();
 
-// Initialisation
 const app = express();
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const PORT = process.env.PORT || 10000;
@@ -19,9 +19,8 @@ mongoose.connect(process.env.MONGO_URI)
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/webhook', express.raw({ type: 'application/json' })); // ← IMPORTANT
 
 // Modèle utilisateur
 const User = require('./models/user');
@@ -66,7 +65,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
 
-// Envoi d'e-mail manuel
+// Envoi d'email manuel
 app.post('/send-email', async (req, res) => {
   const { to, subject, html } = req.body;
 
@@ -122,64 +121,83 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
-// ✅ Webhook Stripe
-const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-app.post('/webhook', (request, response) => {
-  const sig = request.headers['stripe-signature'];
-
+// Webhook Stripe
+app.post('/webhook-stripe', express.raw({ type: 'application/json' }), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(request.body, sig, endpointSecret);
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
   } catch (err) {
-    console.error('❌ Erreur Webhook Stripe :', err.message);
-    return response.status(400).send(`Webhook Error: ${err.message}`);
+    console.error('❌ Erreur de signature Webhook :', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
-    const customer = session.customer_details;
-    const address = customer.address || {};
 
-    const infos = `
-      <h2>Nouvelle commande client</h2>
-      <p><strong>Nom :</strong> ${customer.name}</p>
-      <p><strong>Email :</strong> ${customer.email}</p>
-      <p><strong>Téléphone :</strong> ${customer.phone || 'Non fourni'}</p>
-      <p><strong>Adresse :</strong> ${address.line1 || ''}, ${address.postal_code || ''}, ${address.city || ''}</p>
-      <p><strong>Produits :</strong> ${JSON.stringify(session.display_items || session.line_items || 'Non précisé')}</p>
-    `;
+    try {
+      const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
+        expand: ['data.price.product']
+      });
 
-    const transporter = nodemailer.createTransport({
-      host: "smtp-relay.brevo.com",
-      port: 587,
-      auth: {
-        user: process.env.BREVO_USER,
-        pass: process.env.BREVO_PASS
-      }
-    });
+      const client = session.customer_details;
+      const clientName = client.name;
+      const clientEmail = client.email;
+      const clientPhone = client.phone || 'Non fourni';
+      const address = client.address;
+      const addressStr = `${address.line1}, ${address.postal_code}, ${address.city}, ${address.country}`;
 
-    const mailOptions = {
-      from: process.env.BREVO_USER,
-      to: ['yorickspprt@gmail.com', 'service@qbuytech.com'],
-      subject: 'Nouvelle commande client - Stripe',
-      html: infos
-    };
+      let produits = '';
+      lineItems.data.forEach(item => {
+        produits += `<li>${item.quantity} x ${item.description}</li>`;
+      });
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error('❌ Erreur envoi email :', error);
-      } else {
-        console.log('✅ Email envoyé :', info.response);
-      }
-    });
+      const emailContent = `
+        <h2>Nouvelle commande reçue</h2>
+        <p><strong>Nom :</strong> ${clientName}</p>
+        <p><strong>Email :</strong> ${clientEmail}</p>
+        <p><strong>Téléphone :</strong> ${clientPhone}</p>
+        <p><strong>Adresse de livraison :</strong> ${addressStr}</p>
+        <p><strong>Produits commandés :</strong></p>
+        <ul>${produits}</ul>
+      `;
+
+      const transporter = nodemailer.createTransport({
+        host: "smtp-relay.brevo.com",
+        port: 587,
+        auth: {
+          user: process.env.BREVO_USER,
+          pass: process.env.BREVO_PASS
+        }
+      });
+
+      // Email à toi
+      await transporter.sendMail({
+        from: process.env.BREVO_USER,
+        to: "yorickspprt@gmail.com",
+        subject: "Nouvelle commande client",
+        html: emailContent
+      });
+
+      // Email au fournisseur
+      await transporter.sendMail({
+        from: process.env.BREVO_USER,
+        to: "service@qbuytech.com",
+        subject: "Commande à expédier",
+        html: emailContent
+      });
+
+      console.log("✅ Emails envoyés après commande");
+    } catch (err) {
+      console.error("❌ Erreur envoi email après paiement :", err);
+    }
   }
 
-  response.status(200).send('OK');
+  res.json({ received: true });
 });
 
-// Démarrage serveur
+// Lancer le serveur
 app.listen(PORT, () => {
   console.log(`✅ Serveur démarré sur http://localhost:${PORT}`);
 });
