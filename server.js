@@ -12,20 +12,21 @@ const app = express();
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const PORT = process.env.PORT || 10000;
 
-// Connexion à MongoDB Atlas
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ Connecté à MongoDB Atlas'))
-  .catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
-
-// Middleware
+// ✅ Permet à Stripe de lire la requête brute pour le webhook
+app.use('/webhook-stripe', express.raw({ type: 'application/json' }));
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Connexion MongoDB
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('✅ Connecté à MongoDB Atlas'))
+  .catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
+
 // Modèle utilisateur
 const User = require('./models/user');
 
-// Route d'inscription
+// Inscription
 app.post('/register', async (req, res) => {
   try {
     const existing = await User.findOne({ email: req.body.email });
@@ -41,7 +42,7 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// Route de connexion
+// Connexion
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -60,12 +61,12 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Page d'accueil
+// Page d’accueil
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
 
-// Envoi d'email manuel
+// Envoi manuel d'email
 app.post('/send-email', async (req, res) => {
   const { to, subject, html } = req.body;
 
@@ -122,7 +123,7 @@ app.post('/create-checkout-session', async (req, res) => {
 });
 
 // Webhook Stripe
-app.post('/webhook-stripe', express.raw({ type: 'application/json' }), async (req, res) => {
+app.post('/webhook-stripe', async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;
 
@@ -144,7 +145,7 @@ app.post('/webhook-stripe', express.raw({ type: 'application/json' }), async (re
       const client = session.customer_details;
       const clientName = client.name;
       const clientEmail = client.email;
-      const clientPhone = client.phone || 'Non fourni';  // Valeur par défaut si non fournie
+      const clientPhone = client.phone || 'Non fourni';
       const address = client.address;
       const addressStr = `${address.line1}, ${address.postal_code}, ${address.city}, ${address.country}`;
 
@@ -163,7 +164,6 @@ app.post('/webhook-stripe', express.raw({ type: 'application/json' }), async (re
         <ul>${produits}</ul>
       `;
 
-      // Création du transporteur avec Brevo
       const transporter = nodemailer.createTransport({
         host: "smtp-relay.brevo.com",
         port: 587,
@@ -173,18 +173,16 @@ app.post('/webhook-stripe', express.raw({ type: 'application/json' }), async (re
         }
       });
 
-      // Email à toi
       await transporter.sendMail({
         from: process.env.BREVO_USER,
-        to: "yorickspprt@gmail.com",  // Ton email
+        to: "yorickspprt@gmail.com",
         subject: "Nouvelle commande client",
         html: emailContent
       });
 
-      // Email au fournisseur
       await transporter.sendMail({
         from: process.env.BREVO_USER,
-        to: "service@qbuytech.com",  // Email du fournisseur
+        to: "service@qbuytech.com",
         subject: "Commande à expédier",
         html: emailContent
       });
@@ -198,7 +196,7 @@ app.post('/webhook-stripe', express.raw({ type: 'application/json' }), async (re
   res.json({ received: true });
 });
 
-// Lancer le serveur
+// Démarrer serveur
 app.listen(PORT, () => {
   console.log(`✅ Serveur démarré sur http://localhost:${PORT}`);
 });
