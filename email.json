@@ -1,6 +1,6 @@
 {
-    "to": "yorickspprt@gmail.com",
-    "subject": "Test",
-    "html": "<h1>Test Brevo</h1>"
-  }
-  
+  "to": "yorickspprt@gmail.com",
+  "subject": "Test mail nodemailer",
+  "html": "<p>Ceci est un test d'envoi via Nodemailer et Gmail</p>"
+
+}
