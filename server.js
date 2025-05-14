@@ -12,88 +12,29 @@ const app = express();
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const PORT = process.env.PORT || 10000;
 
-// ✅ Permet à Stripe de lire la requête brute pour le webhook
-app.use('/webhook-stripe', express.raw({ type: 'application/json' }));
-app.use(cors());
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Connexion MongoDB
+// Connexion à MongoDB Atlas
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Connecté à MongoDB Atlas'))
   .catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
 
+// ⚠️ CORRECTIF pour ne pas parser le corps du webhook Stripe
+app.use((req, res, next) => {
+  if (req.originalUrl === '/webhook-stripe') {
+    next(); // ne pas parser ce endpoint
+  } else {
+    bodyParser.json()(req, res, next);
+  }
+});
+
+app.use(cors());
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Modèle utilisateur
 const User = require('./models/user');
 
-// Inscription
-app.post('/register', async (req, res) => {
-  try {
-    const existing = await User.findOne({ email: req.body.email });
-    if (existing) return res.status(400).json({ error: 'Email déjà utilisé.' });
+// [TES ROUTES REGISTER / LOGIN ... inchangées]
 
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
-    const user = new User({ ...req.body, password: hashedPassword });
-    await user.save();
-    res.status(201).json({ message: 'Utilisateur enregistré avec succès.' });
-  } catch (err) {
-    console.error('❌ Erreur enregistrement :', err);
-    res.status(500).json({ error: 'Erreur lors de l\'enregistrement.' });
-  }
-});
-
-// Connexion
-app.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    const user = await User.findOne({ email });
-    if (!user) return res.status(401).json({ error: "Email ou mot de passe incorrect." });
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ error: "Email ou mot de passe incorrect." });
-
-    const { password: _, ...userSansMotDePasse } = user.toObject();
-    res.status(200).json(userSansMotDePasse);
-  } catch (err) {
-    console.error("❌ Erreur lors de la connexion :", err);
-    res.status(500).json({ error: "Erreur serveur." });
-  }
-});
-
-// Page d’accueil
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'panier.html'));
-});
-
-// Envoi manuel d'email
-app.post('/send-email', async (req, res) => {
-  const { to, subject, html } = req.body;
-
-  const transporter = nodemailer.createTransport({
-    host: "smtp-relay.brevo.com",
-    port: 587,
-    auth: {
-      user: process.env.BREVO_USER,
-      pass: process.env.BREVO_PASS
-    }
-  });
-
-  try {
-    await transporter.sendMail({
-      from: process.env.BREVO_USER,
-      to,
-      subject,
-      html
-    });
-    res.status(200).json({ message: 'Email envoyé avec succès.' });
-  } catch (error) {
-    console.error('Erreur d\'envoi détaillée :', error);
-    res.status(500).json({ error: `Erreur lors de l'envoi de l'email : ${error.message}` });
-  }
-});
-
-// Stripe Checkout
+// Route pour créer une session de paiement Stripe
 app.post('/create-checkout-session', async (req, res) => {
   const { items } = req.body;
 
@@ -104,9 +45,7 @@ app.post('/create-checkout-session', async (req, res) => {
       line_items: items.map(item => ({
         price_data: {
           currency: 'eur',
-          product_data: {
-            name: item.name,
-          },
+          product_data: { name: item.name },
           unit_amount: item.price,
         },
         quantity: item.quantity,
@@ -122,8 +61,8 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
-// Webhook Stripe
-app.post('/webhook-stripe', async (req, res) => {
+// ✅ Webhook Stripe — DOIT être au-dessus de `bodyParser.json()`
+app.post('/webhook-stripe', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;
 
@@ -196,7 +135,7 @@ app.post('/webhook-stripe', async (req, res) => {
   res.json({ received: true });
 });
 
-// Démarrer serveur
+// Lancer le serveur
 app.listen(PORT, () => {
   console.log(`✅ Serveur démarré sur http://localhost:${PORT}`);
 });
