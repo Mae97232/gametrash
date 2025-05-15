@@ -77,8 +77,8 @@ console.log("BREVO_SMTP_KEY:", process.env.BREVO_SMTP_KEY ? '✅ OK' : '❌ ABSE
     host: 'smtp-relay.brevo.com',
     port: 2525,
     auth: {
-      user: process.env.BREVO_USER,
-      pass: process.env.BREVO_SMTP_KEY
+        user: process.env.BREVO_USER,
+        pass: process.env.BREVO_PASS
     },
     logger: true,
     debug: true
