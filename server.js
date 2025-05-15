@@ -10,15 +10,87 @@ require('dotenv').config();
 
 const app = express();
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
-const PORT = process.env.PORT || 10001; // au lieu de 10000
+const PORT = process.env.PORT || 4242;
 
-
-// Connexion à MongoDB Atlas
+// Connexion MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Connecté à MongoDB Atlas'))
   .catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
 
-// Middleware
+// ✅ Route Webhook Stripe avant tout bodyParser
+app.post('/webhook-stripe', express.raw({ type: 'application/json' }), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+  } catch (err) {
+    console.error('❌ Erreur de signature Webhook :', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+
+    try {
+      const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
+        expand: ['data.price.product']
+      });
+
+      const client = session.customer_details;
+      const clientName = client.name;
+      const clientEmail = client.email;
+      const clientPhone = client.phone || 'Non fourni';
+      const address = client.address;
+      const addressStr = `${address.line1}, ${address.postal_code}, ${address.city}, ${address.country}`;
+
+      let produits = '';
+      lineItems.data.forEach(item => {
+        produits += `<li>${item.quantity} x ${item.description} (${item.price.unit_amount / 100} EUR)</li>`;
+      });
+
+      const emailContent = `
+        <h2>Nouvelle commande reçue</h2>
+        <p><strong>Nom :</strong> ${clientName}</p>
+        <p><strong>Email :</strong> ${clientEmail}</p>
+        <p><strong>Téléphone :</strong> ${clientPhone}</p>
+        <p><strong>Adresse de livraison :</strong> ${addressStr}</p>
+        <p><strong>Produits commandés :</strong></p>
+        <ul>${produits}</ul>
+      `;
+
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.GMAIL_USER,
+          pass: process.env.GMAIL_PASS
+        }
+      });
+
+      await transporter.sendMail({
+        from: process.env.GMAIL_USER,
+        to: "yorickspprt@gmail.com",
+        subject: "Nouvelle commande client",
+        html: emailContent
+      });
+
+      await transporter.sendMail({
+        from: process.env.GMAIL_USER,
+        to: "service@qbuytech.com",
+        subject: "Commande à expédier",
+        html: emailContent
+      });
+
+      console.log("✅ Emails envoyés après commande");
+    } catch (err) {
+      console.error("❌ Erreur envoi email après paiement :", err);
+    }
+  }
+
+  res.json({ received: true });
+});
+
+// ✅ Après le webhook, on applique bodyParser
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -66,28 +138,21 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
 
-// Envoi d'email manuel (test)
+// Envoi d'email manuel
 app.post('/send-email', async (req, res) => {
   const { to, subject, html } = req.body;
 
-  console.log("BREVO_USER:", process.env.BREVO_USER);
-console.log("BREVO_SMTP_KEY:", process.env.BREVO_SMTP_KEY ? '✅ OK' : '❌ ABSENTE');
-
- const transporter = nodemailer.createTransport({
-  host: 'smtp-relay.brevo.com',
-  port: 2525,
-  auth: {
-    user: process.env.BREVO_USER,
-    pass: process.env.BREVO_PASS
-  },
-  secure: false, // STARTTLS sera utilisé à ce port
-  logger: true,
-  debug: true
-});
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_PASS
+    }
+  });
 
   try {
     await transporter.sendMail({
-      from: process.env.BREVO_USER,
+      from: process.env.GMAIL_USER,
       to,
       subject,
       html
@@ -128,103 +193,22 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
-// Webhook Stripe
-app.post('/webhook-stripe', express.raw({ type: 'application/json' }), async (req, res) => {
-  const sig = req.headers['stripe-signature'];
-  let event;
-
-  try {
-    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-  } catch (err) {
-    console.error('❌ Erreur de signature Webhook :', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
-
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object;
-
-    try {
-      const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
-        expand: ['data.price.product']
-      });
-
-      const client = session.customer_details;
-      const clientName = client.name;
-      const clientEmail = client.email;
-      const clientPhone = client.phone || 'Non fourni';
-      const address = client.address;
-      const addressStr = `${address.line1}, ${address.postal_code}, ${address.city}, ${address.country}`;
-
-      let produits = '';
-      lineItems.data.forEach(item => {
-        produits += `<li>${item.quantity} x ${item.description} (${item.price.unit_amount / 100} EUR)</li>`;
-      });
-
-      const emailContent = `
-        <h2>Nouvelle commande reçue</h2>
-        <p><strong>Nom :</strong> ${clientName}</p>
-        <p><strong>Email :</strong> ${clientEmail}</p>
-        <p><strong>Téléphone :</strong> ${clientPhone}</p>
-        <p><strong>Adresse de livraison :</strong> ${addressStr}</p>
-        <p><strong>Produits commandés :</strong></p>
-        <ul>${produits}</ul>
-      `;
-console.log("SMTP USER:", process.env.SMTP_USER);
-console.log("SMTP PASS:", process.env.SMTP_PASS ? '✅ ok' : '❌ missing');
-
-      const transporter = nodemailer.createTransport({
-        host: 'smtp-relay.brevo.com',
-        port: 2525,
-        auth: {
-          user: process.env.BREVO_USER,
-          pass: process.env.BREVO_SMTP_KEY
-        },
-        logger: true,
-        debug: true
-      });
-
-      // Email à toi
-      await transporter.sendMail({
-        from: process.env.BREVO_USER,
-        to: "yorickspprt@gmail.com",
-        subject: "Nouvelle commande client",
-        html: emailContent
-      });
-
-      // Email au fournisseur
-      await transporter.sendMail({
-        from: process.env.BREVO_USER,
-        to: "service@qbuytech.com",
-        subject: "Commande à expédier",
-        html: emailContent
-      });
-
-      console.log("✅ Emails envoyés après commande");
-    } catch (err) {
-      console.error("❌ Erreur envoi email après paiement :", err);
-    }
-  }
-
-  res.json({ received: true });
-});
+// Test email
 app.get('/test-email', async (req, res) => {
   const transporter = nodemailer.createTransport({
-    host: 'smtp-relay.brevo.com',
-    port: 2525,
+    service: 'gmail',
     auth: {
-      user: process.env.BREVO_USER,
-      pass: process.env.BREVO_SMTP_KEY
-    },
-    logger: true,
-    debug: true
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_PASS
+    }
   });
 
   try {
     await transporter.sendMail({
-      from: process.env.BREVO_USER,
+      from: process.env.GMAIL_USER,
       to: "yorickspprt@gmail.com",
-      subject: "✅ Test Brevo via Nodemailer",
-      html: "<p>Ceci est un test envoyé via Nodemailer + Brevo 🚀</p>"
+      subject: "✅ Test Gmail via Nodemailer",
+      html: "<p>Ceci est un test envoyé via Nodemailer + Gmail 🚀</p>"
     });
 
     res.send("✅ Email de test envoyé !");
@@ -234,7 +218,7 @@ app.get('/test-email', async (req, res) => {
   }
 });
 
-// Lancer le serveur
-app.listen(PORT, () => {
-  console.log(`✅ Serveur démarré sur http://localhost:${PORT}`);
+// Démarrage du serveur
+app.listen(4242, () => {
+  console.log(`🚀 Serveur démarré sur http://localhost:4242`);
 });
