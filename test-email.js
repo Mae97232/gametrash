@@ -17,7 +17,7 @@ async function testSendEmail() {
 
     const info = await transporter.sendMail({
       from: process.env.BREVO_USER,
-      to: 'ton.email@gmail.com', // Mets ton email ici pour recevoir le test
+      to: 'yorickspprt@gmail.com', // Mets ton email ici pour recevoir le test
       subject: 'Test Nodemailer + Brevo',
       html: '<h1>Test email envoyé avec Nodemailer et Brevo SMTP 🚀</h1>',
     });
