@@ -73,16 +73,17 @@ app.post('/send-email', async (req, res) => {
   console.log("BREVO_USER:", process.env.BREVO_USER);
 console.log("BREVO_SMTP_KEY:", process.env.BREVO_SMTP_KEY ? '✅ OK' : '❌ ABSENTE');
 
-  const transporter = nodemailer.createTransport({
-    host: 'smtp-relay.brevo.com',
-    port: 2525,
-    auth: {
-        user: process.env.BREVO_USER,
-        pass: process.env.BREVO_PASS
-    },
-    logger: true,
-    debug: true
-  });
+ const transporter = nodemailer.createTransport({
+  host: 'smtp-relay.brevo.com',
+  port: 2525,
+  auth: {
+    user: process.env.BREVO_USER,
+    pass: process.env.BREVO_PASS
+  },
+  secure: false, // STARTTLS sera utilisé à ce port
+  logger: true,
+  debug: true
+});
 
   try {
     await transporter.sendMail({
