@@ -70,6 +70,9 @@ app.get('/', (req, res) => {
 app.post('/send-email', async (req, res) => {
   const { to, subject, html } = req.body;
 
+  console.log("BREVO_USER:", process.env.BREVO_USER);
+console.log("BREVO_SMTP_KEY:", process.env.BREVO_SMTP_KEY ? '✅ OK' : '❌ ABSENTE');
+
   const transporter = nodemailer.createTransport({
     host: 'smtp-relay.brevo.com',
     port: 2525,
