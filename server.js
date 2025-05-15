@@ -200,6 +200,32 @@ app.post('/webhook-stripe', express.raw({ type: 'application/json' }), async (re
 
   res.json({ received: true });
 });
+app.get('/test-email', async (req, res) => {
+  const transporter = nodemailer.createTransport({
+    host: 'smtp-relay.brevo.com',
+    port: 2525,
+    auth: {
+      user: process.env.BREVO_USER,
+      pass: process.env.BREVO_SMTP_KEY
+    },
+    logger: true,
+    debug: true
+  });
+
+  try {
+    await transporter.sendMail({
+      from: process.env.BREVO_USER,
+      to: "yorickspprt@gmail.com",
+      subject: "✅ Test Brevo via Nodemailer",
+      html: "<p>Ceci est un test envoyé via Nodemailer + Brevo 🚀</p>"
+    });
+
+    res.send("✅ Email de test envoyé !");
+  } catch (err) {
+    console.error("❌ Erreur envoi test :", err);
+    res.status(500).send(`Erreur : ${err.message}`);
+  }
+});
 
 // Lancer le serveur
 app.listen(PORT, () => {
