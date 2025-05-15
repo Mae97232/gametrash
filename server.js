@@ -10,7 +10,8 @@ require('dotenv').config();
 
 const app = express();
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 10001; // au lieu de 10000
+
 
 // Connexion à MongoDB Atlas
 mongoose.connect(process.env.MONGO_URI)
