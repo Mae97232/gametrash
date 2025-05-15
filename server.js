@@ -70,16 +70,19 @@ app.post('/send-email', async (req, res) => {
   const { to, subject, html } = req.body;
 
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp-relay.brevo.com',
+    port: 2525,
     auth: {
-      user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASSWORD
-    }
+      user: process.env.BREVO_USER,
+      pass: process.env.BREVO_SMTP_KEY
+    },
+    logger: true,
+    debug: true
   });
 
   try {
     await transporter.sendMail({
-      from: process.env.GMAIL_USER,
+      from: process.env.BREVO_USER,
       to,
       subject,
       html
@@ -163,16 +166,19 @@ app.post('/webhook-stripe', express.raw({ type: 'application/json' }), async (re
       `;
 
       const transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp-relay.brevo.com',
+        port: 2525,
         auth: {
-          user: process.env.GMAIL_USER,
-          pass: process.env.GMAIL_APP_PASSWORD
-        }
+          user: process.env.BREVO_USER,
+          pass: process.env.BREVO_SMTP_KEY
+        },
+        logger: true,
+        debug: true
       });
 
       // Email à toi
       await transporter.sendMail({
-        from: process.env.GMAIL_USER,
+        from: process.env.BREVO_USER,
         to: "yorickspprt@gmail.com",
         subject: "Nouvelle commande client",
         html: emailContent
@@ -180,7 +186,7 @@ app.post('/webhook-stripe', express.raw({ type: 'application/json' }), async (re
 
       // Email au fournisseur
       await transporter.sendMail({
-        from: process.env.GMAIL_USER,
+        from: process.env.BREVO_USER,
         to: "service@qbuytech.com",
         subject: "Commande à expédier",
         html: emailContent
