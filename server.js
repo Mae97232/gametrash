@@ -17,7 +17,7 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Connecté à MongoDB Atlas'))
   .catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
 
-// ✅ Route Webhook Stripe avant tout bodyParser
+// ✅ Route Webhook Stripe AVANT les autres middlewares
 app.post('/webhook-stripe', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;
@@ -90,7 +90,7 @@ app.post('/webhook-stripe', express.raw({ type: 'application/json' }), async (re
   res.json({ received: true });
 });
 
-// ✅ Après le webhook, on applique bodyParser
+// ✅ Ces middlewares viennent APRÈS le webhook
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
