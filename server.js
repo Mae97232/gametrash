@@ -18,7 +18,7 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
 
 // ✅ Route Webhook Stripe AVANT les autres middlewares
-app.post('/webhook-stripe', express.raw({ type: 'application/json' }), async (req, res) => {
+app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;
 
