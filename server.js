@@ -15,20 +15,18 @@ const PORT = process.env.PORT || 4242;
 // Connexion MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Connecté à MongoDB Atlas'))
-  .catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
+  .catch(err => console.error('❌ Erreur MongoDB :', err));
 
-// Webhook Stripe - DOIT venir avant les autres bodyParser
+// Webhook Stripe AVANT bodyParser.json
 app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
-  console.log('🚀 Webhook Stripe reçu');
-
   const sig = req.headers['stripe-signature'];
   let event;
 
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-    console.log('✔️ Signature vérifiée :', event.type);
+    console.log('✔️ Webhook reçu :', event.type);
   } catch (err) {
-    console.error('❌ Erreur de vérification de signature Webhook :', err.message);
+    console.error('❌ Signature invalide :', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
@@ -40,15 +38,11 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         expand: ['data.price.product']
       });
 
-      const shipping = session.customer_details || {};
-      const clientName = shipping.name || "Nom non fourni";
-      const adresse = shipping.address || {};
-      const adressePostale = adresse.line1
-        ? `${adresse.line1}, ${adresse.postal_code}, ${adresse.city}, ${adresse.country}`
-        : "Adresse non fournie";
-
-      const telephone = shipping.phone || "Téléphone non fourni";
-      const email = shipping.email || "Email non fourni";
+      // ✅ Récupérer les infos depuis les metadata
+      const clientName = session.metadata.nom || "Nom non fourni";
+      const adressePostale = session.metadata.adresse || "Adresse non fournie";
+      const telephone = session.metadata.tel || "Téléphone non fourni";
+      const email = session.metadata.email || "Email non fourni";
 
       const emailContent = `
         <h2>Nouvelle commande reçue</h2>
@@ -58,7 +52,7 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         <p><strong>Adresse :</strong> ${adressePostale}</p>
         <ul>
           ${lineItems.data.map(item =>
-            `<li>${item.quantity} x ${item.description} (${item.price.unit_amount / 100} EUR)</li>`
+            `<li>${item.quantity} x ${item.description} (${item.price.unit_amount / 100} €)</li>`
           ).join('')}
         </ul>
       `;
@@ -71,7 +65,6 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         }
       });
 
-      // Email au client
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
         to: email,
@@ -79,7 +72,6 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         html: emailContent
       });
 
-      // Email au propriétaire du site
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
         to: "maelyck97232@gmail.com",
@@ -87,12 +79,10 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         html: emailContent
       });
 
-      console.log('✅ Emails envoyés avec succès !');
+      console.log('✅ Emails envoyés');
     } catch (err) {
-      console.error('❌ Erreur lors du traitement de la commande :', err);
+      console.error('❌ Erreur traitement commande :', err);
     }
-  } else {
-    console.log(`ℹ️ Événement ignoré : ${event.type}`);
   }
 
   res.json({ received: true });
@@ -106,7 +96,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // User model
 const User = require('./models/user');
 
-// Enregistrement utilisateur
+// Inscription
 app.post('/register', async (req, res) => {
   try {
     const existing = await User.findOne({ email: req.body.email });
@@ -122,7 +112,7 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// Connexion utilisateur
+// Connexion
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -136,12 +126,12 @@ app.post('/login', async (req, res) => {
     const { password: _, ...userSansMotDePasse } = user.toObject();
     res.status(200).json(userSansMotDePasse);
   } catch (err) {
-    console.error("❌ Erreur lors de la connexion :", err);
+    console.error("❌ Erreur connexion :", err);
     res.status(500).json({ error: "Erreur serveur." });
   }
 });
 
-// Envoi email manuel
+// Envoi manuel d'email
 app.post('/send-email', async (req, res) => {
   const { to, subject, html } = req.body;
 
@@ -160,9 +150,9 @@ app.post('/send-email', async (req, res) => {
       subject,
       html
     });
-    res.status(200).json({ message: 'Email envoyé avec succès.' });
+    res.status(200).json({ message: 'Email envoyé.' });
   } catch (error) {
-    console.error('Erreur d\'envoi :', error);
+    console.error('Erreur envoi email :', error);
     res.status(500).json({ error: `Erreur lors de l'envoi de l'email : ${error.message}` });
   }
 });
@@ -178,21 +168,15 @@ app.post('/create-checkout-session', async (req, res) => {
       line_items: items.map(item => ({
         price_data: {
           currency: 'eur',
-          product_data: {
-            name: item.name,
-          },
-          unit_amount: item.price,
+          product_data: { name: item.name },
+          unit_amount: item.price
         },
-        quantity: item.quantity,
+        quantity: item.quantity
       })),
       success_url: 'https://mae97232.github.io/gametrash/index.html',
       cancel_url: 'https://mae97232.github.io/gametrash/panier.html',
-      shipping_address_collection: {
-        allowed_countries: ['FR']
-      },
-      phone_number_collection: {
-        enabled: true
-      },
+      shipping_address_collection: { allowed_countries: ['FR'] },
+      phone_number_collection: { enabled: true },
       metadata: {
         nom: client.nom,
         email: client.email,
@@ -200,19 +184,19 @@ app.post('/create-checkout-session', async (req, res) => {
         adresse: `${client.adresse}, ${client.codePostal}, ${client.ville}`
       }
     });
-    console.log('📦 Métadonnées Stripe:', session.metadata);
 
     res.status(200).json({ url: session.url });
   } catch (error) {
-    console.error('Erreur Stripe :', error);
-    res.status(500).json({ error: 'Erreur lors de la création de la session de paiement.' });
+    console.error('❌ Erreur Stripe session :', error);
+    res.status(500).json({ error: 'Erreur Stripe' });
   }
 });
 
-// Page d’accueil
+// Accueil
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
+
 // Démarrage du serveur
 app.listen(4242, () => {
   console.log(`🚀 Serveur démarré sur http://localhost:4242`);
