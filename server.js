@@ -200,6 +200,7 @@ app.post('/create-checkout-session', async (req, res) => {
         adresse: `${client.adresse}, ${client.codePostal}, ${client.ville}`
       }
     });
+    console.log('📦 Métadonnées Stripe:', session.metadata);
 
     res.status(200).json({ url: session.url });
   } catch (error) {
