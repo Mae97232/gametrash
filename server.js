@@ -21,8 +21,8 @@ mongoose.connect(process.env.MONGO_URI)
 app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   console.log('🚀 Webhook Stripe reçu');
 
-  // DEBUG: Vérifier le type de req.body
-  console.log('req.body est Buffer ? :', Buffer.isBuffer(req.body)); // doit afficher true
+  // Vérifier que req.body est un Buffer brut
+  console.log('req.body est Buffer ? :', Buffer.isBuffer(req.body));
 
   const sig = req.headers['stripe-signature'];
   console.log('Signature Stripe reçue :', sig);
@@ -44,18 +44,21 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
         expand: ['data.price.product']
       });
-      console.log('Lignes de commande récupérées:', lineItems.data.length);
+      console.log(`Lignes de commande récupérées: ${lineItems.data.length}`);
 
       const client = session.customer_details;
-      const clientName = client.name;
-      const clientEmail = client.email;
+      const clientName = client.name || 'Non renseigné';
+      const clientEmail = client.email || 'Non renseigné';
       const clientPhone = client.phone || 'Non fourni';
-      const address = client.address;
-      const addressStr = `${address.line1}, ${address.postal_code}, ${address.city}, ${address.country}`;
+      const address = client.address || {};
+      const addressStr = `${address.line1 || ''}, ${address.postal_code || ''}, ${address.city || ''}, ${address.country || ''}`;
 
+      // Construction de la liste produits
       let produits = '';
       lineItems.data.forEach(item => {
-        produits += `<li>${item.quantity} x ${item.description} (${item.price.unit_amount / 100} EUR)</li>`;
+        const productName = item.price.product.name || item.description || 'Produit inconnu';
+        const priceEuro = (item.price.unit_amount / 100).toFixed(2);
+        produits += `<li>${item.quantity} x ${productName} (${priceEuro} EUR)</li>`;
       });
 
       const emailContent = `
@@ -68,6 +71,8 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         <ul>${produits}</ul>
       `;
 
+      // Création du transporteur nodemailer
+      console.log('Création du transporteur Nodemailer...');
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -76,31 +81,52 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         }
       });
 
-      console.log('Envoi des emails...');
+      // Vérifier la connexion SMTP avant d'envoyer
+      transporter.verify((error, success) => {
+        if (error) {
+          console.error('❌ Erreur de connexion SMTP:', error);
+        } else {
+          console.log('✅ Connexion SMTP OK');
+        }
+      });
+
+      // Envoi email au client (si tu veux) ou seulement à toi et fournisseur
+      console.log('Envoi email à yorickspprt@gmail.com...');
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
         to: "yorickspprt@gmail.com",
         subject: "Nouvelle commande client",
         html: emailContent
       });
+      console.log('Email envoyé à yorickspprt@gmail.com');
 
+      console.log('Envoi email à service@qbuytech.com...');
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
         to: "service@qbuytech.com",
         subject: "Commande à expédier",
         html: emailContent
       });
+      console.log('Email envoyé à service@qbuytech.com');
 
-      console.log("✅ Emails envoyés avec succès.");
+      console.log("✅ Tous les emails ont été envoyés avec succès.");
+
+      // Répondre à Stripe que tout est OK
+      res.status(200).send('ok');
+
     } catch (err) {
       console.error("❌ Erreur lors de l'envoi des emails après paiement :", err);
+      res.status(500).send('Erreur serveur interne lors de l\'envoi des emails');
     }
+
   } else {
     console.log(`Événement ignoré (type: ${event.type})`);
+    res.status(200).send('événement ignoré');
   }
+});
 
   res.json({ received: true });
-});
+;
 
 // Middleware JSON, CORS et fichiers statiques (APRES le webhook)
 app.use(cors());
