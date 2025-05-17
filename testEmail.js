@@ -1,4 +1,5 @@
 require('dotenv').config();
+console.log('🧪 process.env:', process.env);
 const nodemailer = require('nodemailer');
 
 // Affichage des valeurs pour vérification
