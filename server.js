@@ -17,6 +17,9 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Connecté à MongoDB Atlas'))
   .catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
 
+// ✅ Fonction de validation d'email
+const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
 // Webhook Stripe - DOIT venir avant les autres bodyParser
 app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   console.log('🚀 Webhook Stripe reçu');
@@ -40,7 +43,6 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         expand: ['data.price.product']
       });
 
-       // ✅ Récupérer les infos depuis les metadata
       const clientName = session.metadata.nom || "Nom non fourni";
       const adressePostale = session.metadata.adresse || "Adresse non fournie";
       const telephone = session.metadata.tel || "Téléphone non fourni";
@@ -67,13 +69,18 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         }
       });
 
-      // Email au client
-      await transporter.sendMail({
-        from: process.env.GMAIL_USER,
-        to: "yorickspprt@gmail.com",
-        subject: "Merci pour votre commande",
-        html: emailContent
-      });
+      // Email au client (seulement si l'adresse est valide)
+      if (isValidEmail(email)) {
+        await transporter.sendMail({
+          from: process.env.GMAIL_USER,
+          to: email,
+          subject: "Merci pour votre commande",
+          html: emailContent
+        });
+        console.log(`📧 Email envoyé au client : ${email}`);
+      } else {
+        console.warn(`⚠️ Email client invalide : ${email} – email non envoyé`);
+      }
 
       // Email au propriétaire du site
       await transporter.sendMail({
@@ -209,6 +216,7 @@ app.post('/create-checkout-session', async (req, res) => {
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
+
 // Démarrage du serveur
 app.listen(4242, () => {
   console.log(`🚀 Serveur démarré sur http://localhost:4242`);
