@@ -12,12 +12,12 @@ const app = express();
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const PORT = process.env.PORT || 4242;
 
-// ✅ Connexion à MongoDB
+// Connexion à MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Connecté à MongoDB Atlas'))
   .catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
 
-// ✅ Stripe Webhook AVANT les middlewares
+// WEBHOOK Stripe (ATTENTION : bodyParser.raw AVANT tout autre parser)
 app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;
@@ -86,17 +86,16 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
       console.error("❌ Erreur envoi email après paiement :", err);
     }
   }
-console.log(`✅ Événement reçu : ${event.type}`);
 
   res.json({ received: true });
 });
 
-// ✅ Middleware JSON, CORS et fichiers statiques APRES le webhook
+// Middleware JSON, CORS et fichiers statiques (APRES le webhook)
 app.use(cors());
-app.use(bodyParser.json());
+app.use(bodyParser.json()); // IMPORTANT : bodyParser.json() après le webhook
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ✅ Routes utilisateur
+// Routes utilisateur, etc.
 const User = require('./models/user');
 
 app.post('/register', async (req, res) => {
@@ -132,12 +131,12 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// ✅ Page d'accueil
+// Page d'accueil
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
 
-// ✅ Envoi manuel d'email
+// Envoi manuel d'email
 app.post('/send-email', async (req, res) => {
   const { to, subject, html } = req.body;
 
@@ -163,7 +162,7 @@ app.post('/send-email', async (req, res) => {
   }
 });
 
-// ✅ Stripe Checkout
+// Stripe Checkout
 app.post('/create-checkout-session', async (req, res) => {
   const { items } = req.body;
 
@@ -192,7 +191,7 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
-// ✅ Test email
+// Test email
 app.get('/test-email', async (req, res) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
@@ -216,7 +215,6 @@ app.get('/test-email', async (req, res) => {
     res.status(500).send(`Erreur : ${err.message}`);
   }
 });
-
 // Démarrage du serveur
 app.listen(4242, () => {
   console.log(`🚀 Serveur démarré sur http://localhost:4242`);
