@@ -12,12 +12,12 @@ const app = express();
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const PORT = process.env.PORT || 4242;
 
-// Connexion MongoDB
+// ✅ Connexion à MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Connecté à MongoDB Atlas'))
   .catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
 
-// ✅ Route Webhook Stripe AVANT les autres middlewares
+// ✅ Stripe Webhook AVANT les middlewares
 app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;
@@ -90,15 +90,14 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
   res.json({ received: true });
 });
 
-// ✅ Ces middlewares viennent APRÈS le webhook
+// ✅ Middleware JSON, CORS et fichiers statiques APRES le webhook
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Modèle utilisateur
+// ✅ Routes utilisateur
 const User = require('./models/user');
 
-// Route d'inscription
 app.post('/register', async (req, res) => {
   try {
     const existing = await User.findOne({ email: req.body.email });
@@ -114,7 +113,6 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// Route de connexion
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -133,12 +131,12 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Page d'accueil
+// ✅ Page d'accueil
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
 
-// Envoi d'email manuel
+// ✅ Envoi manuel d'email
 app.post('/send-email', async (req, res) => {
   const { to, subject, html } = req.body;
 
@@ -164,7 +162,7 @@ app.post('/send-email', async (req, res) => {
   }
 });
 
-// Stripe Checkout
+// ✅ Stripe Checkout
 app.post('/create-checkout-session', async (req, res) => {
   const { items } = req.body;
 
@@ -193,7 +191,7 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
-// Test email
+// ✅ Test email
 app.get('/test-email', async (req, res) => {
   const transporter = nodemailer.createTransport({
     service: 'gmail',
