@@ -17,10 +17,7 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Connecté à MongoDB Atlas'))
   .catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
 
-// ✅ Fonction de validation d'email
-const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-// Webhook Stripe - DOIT venir avant les autres bodyParser
+// Webhook Stripe
 app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   console.log('🚀 Webhook Stripe reçu');
 
@@ -37,21 +34,20 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
-    console.log('🧾 Données session Stripe :', session);
-
 
     try {
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
         expand: ['data.price.product']
       });
 
-      const clientName = session.customer_details?.name || "Nom non fourni";
-      const adressePostale = session.customer_details?.address 
-       ? `${session.customer_details.address.line1}, ${session.customer_details.address.postal_code} ${session.customer_details.address.city}`
-      : "Adresse non fournie";
-       const telephone = session.customer_details?.phone || "Téléphone non fourni";
-       const email = session.customer_details?.email || "Email non fourni";
-
+      // ✅ Récupération depuis customer_details
+      const details = session.customer_details || {};
+      const clientName = details.name || "Nom non fourni";
+      const email = details.email || "Email non fourni";
+      const telephone = details.phone || "Téléphone non fourni";
+      const adressePostale = details.address
+        ? `${details.address.line1}, ${details.address.postal_code}, ${details.address.city}`
+        : "Adresse non fournie";
 
       const emailContent = `
         <h2>Nouvelle commande reçue</h2>
@@ -74,20 +70,15 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         }
       });
 
-      // Email au client (seulement si l'adresse est valide)
-      if (isValidEmail(email)) {
-        await transporter.sendMail({
-          from: process.env.GMAIL_USER,
-          to: email,
-          subject: "Merci pour votre commande",
-          html: emailContent
-        });
-        console.log(`📧 Email envoyé au client : ${email}`);
-      } else {
-        console.warn(`⚠️ Email client invalide : ${email} – email non envoyé`);
-      }
+      // Email client
+      await transporter.sendMail({
+        from: process.env.GMAIL_USER,
+        to: email,
+        subject: "Merci pour votre commande",
+        html: emailContent
+      });
 
-      // Email au propriétaire du site
+      // Email propriétaire
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
         to: "maelyck97232@gmail.com",
@@ -195,20 +186,15 @@ app.post('/create-checkout-session', async (req, res) => {
       })),
       success_url: 'https://mae97232.github.io/gametrash/index.html',
       cancel_url: 'https://mae97232.github.io/gametrash/panier.html',
+      customer_creation: 'always',
+      customer_email: client.email,
       shipping_address_collection: {
         allowed_countries: ['FR']
       },
       phone_number_collection: {
         enabled: true
-      },
-      metadata: {
-        nom: client.nom,
-        email: client.email,
-        tel: client.tel,
-        adresse: `${client.adresse}, ${client.codePostal}, ${client.ville}`
       }
     });
-    console.log('🎯 Données client reçues :', client);
 
     res.status(200).json({ url: session.url });
   } catch (error) {
