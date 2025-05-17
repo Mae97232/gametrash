@@ -45,10 +45,13 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         expand: ['data.price.product']
       });
 
-      const clientName = session.metadata.nom ||session.customer_details?.name|| "Nom non fourni";
-      const adressePostale = session.metadata.adresse || "Adresse non fournie";
-      const telephone = session.metadata.tel || "Téléphone non fourni";
-      const email = session.metadata.email || "Email non fourni";
+      const clientName = session.customer_details?.name || "Nom non fourni";
+      const adressePostale = session.customer_details?.address 
+       ? `${session.customer_details.address.line1}, ${session.customer_details.address.postal_code} ${session.customer_details.address.city}`
+      : "Adresse non fournie";
+       const telephone = session.customer_details?.phone || "Téléphone non fourni";
+       const email = session.customer_details?.email || "Email non fourni";
+
 
       const emailContent = `
         <h2>Nouvelle commande reçue</h2>
