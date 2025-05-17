@@ -17,7 +17,7 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Connecté à MongoDB Atlas'))
   .catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
 
-// Webhook Stripe
+// Webhook Stripe - DOIT venir avant les autres bodyParser
 app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   console.log('🚀 Webhook Stripe reçu');
 
@@ -40,11 +40,12 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         expand: ['data.price.product']
       });
 
-      // ✅ Récupération depuis customer_details
+      // Récupération des détails client
       const details = session.customer_details || {};
       const clientName = details.name || "Nom non fourni";
       const email = details.email || "Email non fourni";
       const telephone = details.phone || "Téléphone non fourni";
+
       const adressePostale = details.address
         ? `${details.address.line1}, ${details.address.postal_code}, ${details.address.city}`
         : "Adresse non fournie";
@@ -70,7 +71,7 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         }
       });
 
-      // Email client
+      // Email au client
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
         to: email,
@@ -78,7 +79,7 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         html: emailContent
       });
 
-      // Email propriétaire
+      // Email au propriétaire du site
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
         to: "maelyck97232@gmail.com",
@@ -186,11 +187,16 @@ app.post('/create-checkout-session', async (req, res) => {
       })),
       success_url: 'https://mae97232.github.io/gametrash/index.html',
       cancel_url: 'https://mae97232.github.io/gametrash/panier.html',
-      customer_creation: 'always',
+
       customer_email: client.email,
+      customer_creation: 'always',
+
       shipping_address_collection: {
         allowed_countries: ['FR']
       },
+
+      billing_address_collection: 'required',
+
       phone_number_collection: {
         enabled: true
       }
@@ -207,6 +213,7 @@ app.post('/create-checkout-session', async (req, res) => {
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
+
 
 // Démarrage du serveur
 app.listen(4242, () => {
