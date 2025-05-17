@@ -37,13 +37,15 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
+    console.log('🧾 Données session Stripe :', session);
+
 
     try {
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
         expand: ['data.price.product']
       });
 
-      const clientName = session.metadata.nom || "Nom non fourni";
+      const clientName = session.metadata.nom ||session.customer_details?.name|| "Nom non fourni";
       const adressePostale = session.metadata.adresse || "Adresse non fournie";
       const telephone = session.metadata.tel || "Téléphone non fourni";
       const email = session.metadata.email || "Email non fourni";
@@ -203,7 +205,7 @@ app.post('/create-checkout-session', async (req, res) => {
         adresse: `${client.adresse}, ${client.codePostal}, ${client.ville}`
       }
     });
-    console.log('📦 Métadonnées Stripe:', session.metadata);
+    console.log('🎯 Données client reçues :', client);
 
     res.status(200).json({ url: session.url });
   } catch (error) {
