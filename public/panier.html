@@ -225,7 +225,11 @@
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ items })
+          body: JSON.stringify({ 
+            items,
+            client: infosClient
+          })
+
         });
         const data = await response.json();
         if (data.url) {
