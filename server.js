@@ -22,12 +22,9 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
   console.log('🚀 Webhook Stripe reçu');
 
   const sig = req.headers['stripe-signature'];
-  console.log('📩 Signature Stripe reçue :', sig);
-
   let event;
 
   try {
-    // Vérification de la signature
     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
     console.log('✔️ Signature vérifiée :', event.type);
   } catch (err) {
@@ -35,25 +32,35 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // Traitement uniquement si le paiement est réussi
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
-    console.log('✅ Paiement réussi - Session ID :', session.id);
 
     try {
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
         expand: ['data.price.product']
       });
 
-      const client = session.customer_details;
+      const client = session.customer_details || {};
+      const shipping = session.shipping || {};
+      const address = shipping.address || {};
+
+      const nomComplet = client.name || "Nom non fourni";
+      const email = client.email || "Email non fourni";
+      const telephone = client.phone || "Non fourni";
+      const adressePostale = address.line1
+        ? `${address.line1}, ${address.postal_code}, ${address.city}, ${address.country}`
+        : "Adresse non fournie";
+
       const emailContent = `
         <h2>Nouvelle commande reçue</h2>
-        <p><strong>Nom :</strong> ${client.name}</p>
-        <p><strong>Email :</strong> ${client.email}</p>
-        <p><strong>Téléphone :</strong> ${client.phone || 'Non fourni'}</p>
-        <p><strong>Adresse :</strong> ${client.address?.line1}, ${client.address?.city}, ${client.address?.postal_code}, ${client.address?.country}</p>
+        <p><strong>Nom :</strong> ${nomComplet}</p>
+        <p><strong>Email :</strong> ${email}</p>
+        <p><strong>Téléphone :</strong> ${telephone}</p>
+        <p><strong>Adresse :</strong> ${adressePostale}</p>
         <ul>
-          ${lineItems.data.map(item => `<li>${item.quantity} x ${item.description} (${item.price.unit_amount / 100} EUR)</li>`).join('')}
+          ${lineItems.data.map(item =>
+            `<li>${item.quantity} x ${item.description} (${item.price.unit_amount / 100} EUR)</li>`
+          ).join('')}
         </ul>
       `;
 
@@ -65,17 +72,15 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         }
       });
 
-      console.log('📤 Envoi des emails en cours...');
-
-      // Envoi client
+      // Envoi au client
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
-        to: client.email,
+        to: email,
         subject: "Merci pour votre commande",
         html: emailContent
       });
 
-      // Envoi admin
+      // Envoi à l'admin
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
         to: "service@qbuytech.com",
@@ -91,16 +96,15 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
     console.log(`ℹ️ Événement ignoré : ${event.type}`);
   }
 
-  // ✅ Réponse envoyée correctement ici
   res.json({ received: true });
 });
 
-// Middleware JSON, CORS et fichiers statiques (APRES le webhook)
+// Middleware après webhook
 app.use(cors());
-app.use(bodyParser.json()); // IMPORTANT : bodyParser.json() après le webhook
+app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Routes utilisateur, etc.
+// Routes MongoDB - utilisateurs
 const User = require('./models/user');
 
 app.post('/register', async (req, res) => {
@@ -187,6 +191,12 @@ app.post('/create-checkout-session', async (req, res) => {
       })),
       success_url: 'https://mae97232.github.io/gametrash/index.html',
       cancel_url: 'https://mae97232.github.io/gametrash/panier.html',
+      shipping_address_collection: {
+        allowed_countries: ['FR'],
+      },
+      phone_number_collection: {
+        enabled: true
+      }
     });
 
     res.status(200).json({ url: session.url });
@@ -220,6 +230,7 @@ app.get('/test-email', async (req, res) => {
     res.status(500).send(`Erreur : ${err.message}`);
   }
 });
+
 // Démarrage du serveur
 app.listen(4242, () => {
   console.log(`🚀 Serveur démarré sur http://localhost:4242`);
