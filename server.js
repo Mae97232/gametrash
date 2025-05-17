@@ -21,58 +21,42 @@ mongoose.connect(process.env.MONGO_URI)
 app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   console.log('🚀 Webhook Stripe reçu');
 
-  // Vérifier que req.body est un Buffer brut
-  console.log('req.body est Buffer ? :', Buffer.isBuffer(req.body));
-
   const sig = req.headers['stripe-signature'];
-  console.log('Signature Stripe reçue :', sig);
+  console.log('📩 Signature Stripe reçue :', sig);
 
   let event;
+
   try {
+    // Vérification de la signature
     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-    console.log('✔️ Signature vérifiée, type d\'événement:', event.type);
+    console.log('✔️ Signature vérifiée :', event.type);
   } catch (err) {
-    console.error('❌ Erreur de signature Webhook :', err.message);
+    console.error('❌ Erreur de vérification de signature Webhook :', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
+  // Traitement uniquement si le paiement est réussi
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
-    console.log('✅ checkout.session.completed reçu, session ID:', session.id);
+    console.log('✅ Paiement réussi - Session ID :', session.id);
 
     try {
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
         expand: ['data.price.product']
       });
-      console.log(`Lignes de commande récupérées: ${lineItems.data.length}`);
 
       const client = session.customer_details;
-      const clientName = client.name || 'Non renseigné';
-      const clientEmail = client.email || 'Non renseigné';
-      const clientPhone = client.phone || 'Non fourni';
-      const address = client.address || {};
-      const addressStr = `${address.line1 || ''}, ${address.postal_code || ''}, ${address.city || ''}, ${address.country || ''}`;
-
-      // Construction de la liste produits
-      let produits = '';
-      lineItems.data.forEach(item => {
-        const productName = item.price.product.name || item.description || 'Produit inconnu';
-        const priceEuro = (item.price.unit_amount / 100).toFixed(2);
-        produits += `<li>${item.quantity} x ${productName} (${priceEuro} EUR)</li>`;
-      });
-
       const emailContent = `
         <h2>Nouvelle commande reçue</h2>
-        <p><strong>Nom :</strong> ${clientName}</p>
-        <p><strong>Email :</strong> ${clientEmail}</p>
-        <p><strong>Téléphone :</strong> ${clientPhone}</p>
-        <p><strong>Adresse de livraison :</strong> ${addressStr}</p>
-        <p><strong>Produits commandés :</strong></p>
-        <ul>${produits}</ul>
+        <p><strong>Nom :</strong> ${client.name}</p>
+        <p><strong>Email :</strong> ${client.email}</p>
+        <p><strong>Téléphone :</strong> ${client.phone || 'Non fourni'}</p>
+        <p><strong>Adresse :</strong> ${client.address?.line1}, ${client.address?.city}, ${client.address?.postal_code}, ${client.address?.country}</p>
+        <ul>
+          ${lineItems.data.map(item => `<li>${item.quantity} x ${item.description} (${item.price.unit_amount / 100} EUR)</li>`).join('')}
+        </ul>
       `;
 
-      // Création du transporteur nodemailer
-      console.log('Création du transporteur Nodemailer...');
       const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
@@ -81,52 +65,35 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         }
       });
 
-      // Vérifier la connexion SMTP avant d'envoyer
-      transporter.verify((error, success) => {
-        if (error) {
-          console.error('❌ Erreur de connexion SMTP:', error);
-        } else {
-          console.log('✅ Connexion SMTP OK');
-        }
-      });
+      console.log('📤 Envoi des emails en cours...');
 
-      // Envoi email au client (si tu veux) ou seulement à toi et fournisseur
-      console.log('Envoi email à yorickspprt@gmail.com...');
+      // Envoi client
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
-        to: "yorickspprt@gmail.com",
-        subject: "Nouvelle commande client",
+        to: client.email,
+        subject: "Merci pour votre commande",
         html: emailContent
       });
-      console.log('Email envoyé à yorickspprt@gmail.com');
 
-      console.log('Envoi email à service@qbuytech.com...');
+      // Envoi admin
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
         to: "service@qbuytech.com",
-        subject: "Commande à expédier",
+        subject: "Nouvelle commande client",
         html: emailContent
       });
-      console.log('Email envoyé à service@qbuytech.com');
 
-      console.log("✅ Tous les emails ont été envoyés avec succès.");
-
-      // Répondre à Stripe que tout est OK
-      res.status(200).send('ok');
-
-    } catch (err) {
-      console.error("❌ Erreur lors de l'envoi des emails après paiement :", err);
-      res.status(500).send('Erreur serveur interne lors de l\'envoi des emails');
+      console.log('✅ Emails envoyés avec succès !');
+    } catch (emailErr) {
+      console.error('❌ Erreur lors de l’envoi des emails :', emailErr);
     }
-
   } else {
-    console.log(`Événement ignoré (type: ${event.type})`);
-    res.status(200).send('événement ignoré');
+    console.log(`ℹ️ Événement ignoré : ${event.type}`);
   }
-});
 
+  // ✅ Réponse envoyée correctement ici
   res.json({ received: true });
-;
+});
 
 // Middleware JSON, CORS et fichiers statiques (APRES le webhook)
 app.use(cors());
