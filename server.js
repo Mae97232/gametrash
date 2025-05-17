@@ -40,15 +40,15 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         expand: ['data.price.product']
       });
 
-      const shipping = session.shipping || {};
+      const shipping = session.customer_details || {};
       const clientName = shipping.name || "Nom non fourni";
-      const address = shipping.address || {};
-      const adressePostale = address.line1
-        ? `${address.line1}, ${address.postal_code}, ${address.city}, ${address.country}`
+      const adresse = shipping.address || {};
+      const adressePostale = adresse.line1
+        ? `${adresse.line1}, ${adresse.postal_code}, ${adresse.city}, ${adresse.country}`
         : "Adresse non fournie";
 
-      const telephone = session.customer_details?.phone || "Téléphone non fourni";
-      const email = session.customer_details?.email || "Email non fourni";
+      const telephone = shipping.phone || "Téléphone non fourni";
+      const email = shipping.email || "Email non fourni";
 
       const emailContent = `
         <h2>Nouvelle commande reçue</h2>
@@ -71,6 +71,7 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         }
       });
 
+      // Email au client
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
         to: email,
@@ -78,6 +79,7 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         html: emailContent
       });
 
+      // Email au propriétaire du site
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
         to: "maelyck97232@gmail.com",
@@ -167,12 +169,13 @@ app.post('/send-email', async (req, res) => {
 
 // Stripe checkout session
 app.post('/create-checkout-session', async (req, res) => {
-  const { items } = req.body;
+  const { items, customerEmail } = req.body;
 
   try {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
+      customer_email: customerEmail, // ← récupère les infos client
       line_items: items.map(item => ({
         price_data: {
           currency: 'eur',
@@ -200,12 +203,10 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
-
 // Page d’accueil
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
-
 // Démarrage du serveur
 app.listen(4242, () => {
   console.log(`🚀 Serveur démarré sur http://localhost:4242`);
