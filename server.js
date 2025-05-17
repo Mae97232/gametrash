@@ -72,7 +72,7 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         service: 'gmail',
         auth: {
           user: process.env.GMAIL_USER,
-          pass: process.env.GMAIL_PASS
+          pass: process.env.GMAIL_APP_PASS
         }
       });
 
@@ -156,7 +156,7 @@ app.post('/send-email', async (req, res) => {
     service: 'gmail',
     auth: {
       user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_PASS
+      pass: process.env.GMAIL_APP_PASS
     }
   });
 
@@ -209,7 +209,7 @@ app.get('/test-email', async (req, res) => {
     service: 'gmail',
     auth: {
       user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_PASS
+      pass: process.env.GMAIL_APP_PASS
     }
   });
 
