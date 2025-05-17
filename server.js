@@ -169,13 +169,12 @@ app.post('/send-email', async (req, res) => {
 
 // Stripe checkout session
 app.post('/create-checkout-session', async (req, res) => {
-  const { items, customerEmail } = req.body;
+  const { items, client } = req.body;
 
   try {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
-      customer_email: customerEmail, // ← récupère les infos client
       line_items: items.map(item => ({
         price_data: {
           currency: 'eur',
@@ -193,6 +192,12 @@ app.post('/create-checkout-session', async (req, res) => {
       },
       phone_number_collection: {
         enabled: true
+      },
+      metadata: {
+        nom: client.nom,
+        email: client.email,
+        tel: client.tel,
+        adresse: `${client.adresse}, ${client.codePostal}, ${client.ville}`
       }
     });
 
