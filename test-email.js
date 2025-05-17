@@ -1,31 +1,22 @@
 require('dotenv').config();
 const nodemailer = require('nodemailer');
 
-async function testSendEmail() {
-  try {
-    const transporter = nodemailer.createTransport({
-      host: 'smtp-relay.brevo.com',
-      port: 2525,
-      auth: {
-        user: process.env.BREVO_USER,
-        pass: process.env.BREVO_PASS,
-      },
-      secure: false, // STARTTLS sera utilisé sur ce port
-      logger: true,
-      debug: true,
-    });
-
-    const info = await transporter.sendMail({
-      from: process.env.BREVO_USER,
-      to: 'yorick-972@outlook.com', // Mets ton email ici pour recevoir le test
-      subject: 'Test Nodemailer + Brevo',
-      html: '<h1>Test email envoyé avec Nodemailer et Brevo SMTP 🚀</h1>',
-    });
-
-    console.log('Email envoyé ! ID:', info.messageId);
-  } catch (error) {
-    console.error('Erreur lors de l\'envoi du mail:', error);
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS
   }
-}
+});
 
-testSendEmail();
+transporter.sendMail({
+  from: process.env.GMAIL_USER,
+  to: 'yorickspprt@gmail.com',
+  subject: 'Test direct',
+  html: '<h1>Test simple</h1><p>Envoyé depuis script Node.js</p>'
+}, (err, info) => {
+  if (err) {
+    return console.error('❌ Erreur:', err);
+  }
+  console.log('✅ Email envoyé:', info.response);
+});
