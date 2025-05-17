@@ -80,7 +80,7 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
 
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
-        to: "service@qbuytech.com",
+        to: "maelyck97232@gmail.com",
         subject: "Nouvelle commande client",
         html: emailContent
       });
@@ -200,30 +200,6 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 });
 
-// Test email
-app.get('/test-email', async (req, res) => {
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASS
-    }
-  });
-
-  try {
-    await transporter.sendMail({
-      from: process.env.GMAIL_USER,
-      to: "yorickspprt@gmail.com",
-      subject: "✅ Test Gmail via Nodemailer",
-      html: "<p>Ceci est un test envoyé via Nodemailer + Gmail 🚀</p>"
-    });
-
-    res.send("✅ Email de test envoyé !");
-  } catch (err) {
-    console.error("❌ Erreur envoi test :", err);
-    res.status(500).send(`Erreur : ${err.message}`);
-  }
-});
 
 // Page d’accueil
 app.get('/', (req, res) => {
