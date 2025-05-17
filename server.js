@@ -86,6 +86,7 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
       console.error("❌ Erreur envoi email après paiement :", err);
     }
   }
+console.log(`✅ Événement reçu : ${event.type}`);
 
   res.json({ received: true });
 });
