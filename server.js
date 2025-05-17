@@ -12,42 +12,37 @@ const app = express();
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const PORT = process.env.PORT || 4242;
 
-// Connexion à MongoDB
+// Connexion MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Connecté à MongoDB Atlas'))
   .catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
 
-// WEBHOOK Stripe (ATTENTION : bodyParser.raw AVANT tout autre parser)
+// Webhook Stripe - bodyParser.raw d'abord
 app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
-  console.log('🚀 Webhook Stripe reçu');
-
   const sig = req.headers['stripe-signature'];
   let event;
 
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
-    console.log('✔️ Signature vérifiée :', event.type);
+    console.log('✔️ Webhook Stripe reçu :', event.type);
   } catch (err) {
-    console.error('❌ Erreur de vérification de signature Webhook :', err.message);
+    console.error('❌ Erreur de vérification Webhook :', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
 
-    console.log("🧾 SESSION COMPLÈTE :", JSON.stringify(session, null, 2));
-
     try {
+      const customer = await stripe.customers.retrieve(session.customer);
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
         expand: ['data.price.product']
       });
 
-      const client = session.customer_details || {};
-      const nomComplet = client.name || "Nom non fourni";
-      const email = client.email || "Email non fourni";
-      const telephone = client.phone || "Non fourni";
-
-      const address = client.address || {};
+      const nomComplet = customer.name || "Nom non fourni";
+      const email = customer.email || "Email non fourni";
+      const telephone = customer.phone || "Non fourni";
+      const address = customer.address || {};
       const adressePostale = address.line1
         ? `${address.line1}, ${address.postal_code}, ${address.city}, ${address.country}`
         : "Adresse non fournie";
@@ -73,7 +68,7 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         }
       });
 
-      // Envoi au client
+      // Email au client
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
         to: email,
@@ -81,17 +76,17 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         html: emailContent
       });
 
-      // Envoi à l'admin
+      // Email à l'admin
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
-        to: "service@qbuytech.com",
+        to: "Maelyck97232@gmail.com",
         subject: "Nouvelle commande client",
         html: emailContent
       });
 
       console.log('✅ Emails envoyés avec succès !');
-    } catch (emailErr) {
-      console.error('❌ Erreur lors de l’envoi des emails :', emailErr);
+    } catch (err) {
+      console.error('❌ Erreur traitement commande :', err);
     }
   } else {
     console.log(`ℹ️ Événement ignoré : ${event.type}`);
@@ -100,14 +95,15 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
   res.json({ received: true });
 });
 
-// Middleware après webhook
+// Middlewares
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Routes MongoDB - utilisateurs
+// User model
 const User = require('./models/user');
 
+// Enregistrement
 app.post('/register', async (req, res) => {
   try {
     const existing = await User.findOne({ email: req.body.email });
@@ -123,6 +119,7 @@ app.post('/register', async (req, res) => {
   }
 });
 
+// Connexion
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -136,7 +133,7 @@ app.post('/login', async (req, res) => {
     const { password: _, ...userSansMotDePasse } = user.toObject();
     res.status(200).json(userSansMotDePasse);
   } catch (err) {
-    console.error("❌ Erreur lors de la connexion :", err);
+    console.error("❌ Erreur connexion :", err);
     res.status(500).json({ error: "Erreur serveur." });
   }
 });
@@ -146,7 +143,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
 
-// Envoi manuel d'email
+// Envoi email manuel
 app.post('/send-email', async (req, res) => {
   const { to, subject, html } = req.body;
 
@@ -167,7 +164,7 @@ app.post('/send-email', async (req, res) => {
     });
     res.status(200).json({ message: 'Email envoyé avec succès.' });
   } catch (error) {
-    console.error('Erreur d\'envoi détaillée :', error);
+    console.error('❌ Erreur envoi email manuel :', error);
     res.status(500).json({ error: `Erreur lors de l'envoi de l'email : ${error.message}` });
   }
 });
@@ -180,64 +177,27 @@ app.post('/create-checkout-session', async (req, res) => {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
+      customer_creation: 'always',
       line_items: items.map(item => ({
         price_data: {
           currency: 'eur',
-          product_data: {
-            name: item.name,
-          },
+          product_data: { name: item.name },
           unit_amount: item.price,
         },
         quantity: item.quantity,
       })),
       success_url: 'https://mae97232.github.io/gametrash/index.html',
       cancel_url: 'https://mae97232.github.io/gametrash/panier.html',
-      shipping_address_collection: {
-        allowed_countries: ['FR'],
-      },
-      phone_number_collection: {
-        enabled: true
-      },
-      customer_update: {
-        address: 'auto',
-        name: 'auto',
-        shipping: 'auto',
-        phone: 'auto'
-      }
+      shipping_address_collection: { allowed_countries: ['FR'] },
+      phone_number_collection: { enabled: true },
     });
 
     res.status(200).json({ url: session.url });
   } catch (error) {
-    console.error('Erreur Stripe :', error);
+    console.error('❌ Erreur Stripe Checkout :', error);
     res.status(500).json({ error: 'Erreur lors de la création de la session de paiement.' });
   }
 });
-
-// Test email
-app.get('/test-email', async (req, res) => {
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASS
-    }
-  });
-
-  try {
-    await transporter.sendMail({
-      from: process.env.GMAIL_USER,
-      to: "yorickspprt@gmail.com",
-      subject: "✅ Test Gmail via Nodemailer",
-      html: "<p>Ceci est un test envoyé via Nodemailer + Gmail 🚀</p>"
-    });
-
-    res.send("✅ Email de test envoyé !");
-  } catch (err) {
-    console.error("❌ Erreur envoi test :", err);
-    res.status(500).send(`Erreur : ${err.message}`);
-  }
-});
-
 
 // Démarrage du serveur
 app.listen(4242, () => {
