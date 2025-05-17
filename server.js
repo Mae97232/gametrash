@@ -19,11 +19,15 @@ mongoose.connect(process.env.MONGO_URI)
 
 // WEBHOOK Stripe (ATTENTION : bodyParser.raw AVANT tout autre parser)
 app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
-  const sig = req.headers['stripe-signature'];
-  let event;
+  console.log('🚀 Webhook Stripe reçu');
 
+  const sig = req.headers['stripe-signature'];
+  console.log('Signature Stripe reçue :', sig);
+
+  let event;
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    console.log('✔️ Signature vérifiée, type d\'événement:', event.type);
   } catch (err) {
     console.error('❌ Erreur de signature Webhook :', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
@@ -31,11 +35,13 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
+    console.log('✅ checkout.session.completed reçu, session ID:', session.id);
 
     try {
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
         expand: ['data.price.product']
       });
+      console.log('Lignes de commande récupérées:', lineItems.data.length);
 
       const client = session.customer_details;
       const clientName = client.name;
@@ -67,6 +73,7 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         }
       });
 
+      console.log('Envoi des emails...');
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
         to: "yorickspprt@gmail.com",
@@ -81,10 +88,12 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         html: emailContent
       });
 
-      console.log("✅ Emails envoyés après commande");
+      console.log("✅ Emails envoyés avec succès.");
     } catch (err) {
-      console.error("❌ Erreur envoi email après paiement :", err);
+      console.error("❌ Erreur lors de l'envoi des emails après paiement :", err);
     }
+  } else {
+    console.log(`Événement ignoré (type: ${event.type})`);
   }
 
   res.json({ received: true });
