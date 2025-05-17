@@ -35,18 +35,19 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
 
+    console.log("🧾 SESSION COMPLÈTE :", JSON.stringify(session, null, 2));
+
     try {
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
         expand: ['data.price.product']
       });
 
       const client = session.customer_details || {};
-      const shipping = session.shipping || {};
-      const address = shipping.address || {};
-
       const nomComplet = client.name || "Nom non fourni";
       const email = client.email || "Email non fourni";
       const telephone = client.phone || "Non fourni";
+
+      const address = client.address || {};
       const adressePostale = address.line1
         ? `${address.line1}, ${address.postal_code}, ${address.city}, ${address.country}`
         : "Adresse non fournie";
@@ -196,6 +197,12 @@ app.post('/create-checkout-session', async (req, res) => {
       },
       phone_number_collection: {
         enabled: true
+      },
+      customer_update: {
+        address: 'auto',
+        name: 'auto',
+        shipping: 'auto',
+        phone: 'auto'
       }
     });
 
@@ -230,6 +237,7 @@ app.get('/test-email', async (req, res) => {
     res.status(500).send(`Erreur : ${err.message}`);
   }
 });
+
 
 // Démarrage du serveur
 app.listen(4242, () => {
