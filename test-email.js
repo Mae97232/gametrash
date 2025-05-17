@@ -1,29 +1,31 @@
 require('dotenv').config();
-console.log('🧪 process.env:', process.env);
 const nodemailer = require('nodemailer');
 
-// Affichage des valeurs pour vérification
-console.log('✅ GMAIL_USER:', process.env.GMAIL_USER);
-console.log('✅ GMAIL_PASS:', process.env.GMAIL_PASS ? '✔️ existe' : '❌ manquant');
+// Vérification des variables d'environnement
+const user = process.env.GMAIL_USER;
+const pass = process.env.GMAIL_APP_PASS;
 
-// Création du transporteur
+if (!user || !pass) {
+  console.error('❌ Erreur : Veuillez définir GMAIL_USER et GMAIL_APP_PASS dans votre fichier .env');
+  process.exit(1);
+}
+
 const transporter = nodemailer.createTransport({
   service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASS 
-  }
+  auth: { user, pass }
 });
 
-// Envoi de l'email de test
-transporter.sendMail({
-  from: process.env.GMAIL_USER,
-  to: 'yorickspprt@gmail.com',
-  subject: 'Test direct',
+const mailOptions = {
+  from: user,
+  to: 'yorickspprt@gmail.com',  // ton adresse test
+  subject: 'Test Nodemailer avec mot de passe d’application',
   html: '<h1>Test simple</h1><p>Envoyé depuis script Node.js</p>'
-}, (err, info) => {
+};
+
+transporter.sendMail(mailOptions, (err, info) => {
   if (err) {
-    return console.error('❌ Erreur lors de l\'envoi de l\'email :', err);
+    console.error('❌ Erreur lors de l\'envoi de l\'email :', err);
+    return;
   }
   console.log('✅ Email envoyé avec succès :', info.response);
 });
