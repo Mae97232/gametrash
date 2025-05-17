@@ -40,11 +40,15 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         expand: ['data.price.product']
       });
 
-       // ✅ Récupérer les infos depuis les metadata
-      const clientName = session.metadata.nom || "Nom non fourni";
-      const adressePostale = session.metadata.adresse || "Adresse non fournie";
-      const telephone = session.metadata.tel || "Téléphone non fourni";
-      const email = session.metadata.email || "Email non fourni";
+      const shipping = session.customer_details || {};
+      const clientName = shipping.name || "Nom non fourni";
+      const adresse = shipping.address || {};
+      const adressePostale = adresse.line1
+        ? `${adresse.line1}, ${adresse.postal_code}, ${adresse.city}, ${adresse.country}`
+        : "Adresse non fournie";
+
+      const telephone = shipping.phone || "Téléphone non fourni";
+      const email = shipping.email || "Email non fourni";
 
       const emailContent = `
         <h2>Nouvelle commande reçue</h2>
