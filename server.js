@@ -21,6 +21,9 @@ mongoose.connect(process.env.MONGO_URI)
 app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   console.log('🚀 Webhook Stripe reçu');
 
+  // DEBUG: Vérifier le type de req.body
+  console.log('req.body est Buffer ? :', Buffer.isBuffer(req.body)); // doit afficher true
+
   const sig = req.headers['stripe-signature'];
   console.log('Signature Stripe reçue :', sig);
 
