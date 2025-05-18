@@ -18,7 +18,7 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Connecté à MongoDB Atlas'))
   .catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
 
-// Mapping produit -> priceId Stripe
+// Mapping produit -> priceId Stripe (prices doivent être ONE-TIME, pas récurrents)
 const priceMap = {
   "GameBoy Rouge": "price_1RQAblEL9cznbBHR0WpmsM29",
   "GameBoy Noir": "price_1RQ3DMEL9cznbBHRUyJq2IUa",
@@ -28,8 +28,6 @@ const priceMap = {
 
 // Webhook Stripe
 app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
-  console.log('🚀 Webhook Stripe reçu');
-
   const sig = req.headers['stripe-signature'];
   let event;
 
@@ -44,9 +42,6 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
 
-    console.log("🎯 Session Stripe reçue :");
-    console.log(JSON.stringify(session, null, 2));
-
     try {
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
         expand: ['data.price.product']
@@ -56,7 +51,6 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
       const clientName = details.name || "Nom non fourni";
       const email = details.email || "Email non fourni";
       const telephone = details.phone || "Téléphone non fourni";
-
       const adressePostale = details.address
         ? `${details.address.line1}, ${details.address.postal_code}, ${details.address.city}`
         : "Adresse non fournie";
@@ -69,7 +63,7 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         <p><strong>Adresse :</strong> ${adressePostale}</p>
         <ul>
           ${lineItems.data.map(item =>
-            `<li>${item.quantity} x ${item.description} (${item.price.unit_amount / 100} EUR)</li>`
+            `<li>${item.quantity} x ${item.description} (${(item.price.unit_amount / 100).toFixed(2)} EUR)</li>`
           ).join('')}
         </ul>
       `;
@@ -112,7 +106,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// User model
+// User model (assure-toi d’avoir ./models/user.js)
 const User = require('./models/user');
 
 // Enregistrement utilisateur
@@ -204,7 +198,7 @@ app.post('/create-checkout-session', async (req, res) => {
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      mode: 'payment',
+      mode: 'subscription',
       line_items: lineItems,
       success_url: 'https://mae97232.github.io/gametrash/index.html',
       cancel_url: 'https://mae97232.github.io/gametrash/panier.html',
@@ -222,11 +216,11 @@ app.post('/create-checkout-session', async (req, res) => {
     res.status(200).json({ url: session.url });
   } catch (error) {
     console.error('Erreur Stripe :', error);
-    res.status(500).json({ error: 'Erreur lors de la création de la session de paiement.' });
+    res.status(500).json({ error: error.message || 'Erreur lors de la création de la session de paiement.' });
   }
 });
 
-// Page d’accueil
+// Page d’accueil (static)
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
