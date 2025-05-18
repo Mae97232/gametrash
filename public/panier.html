@@ -223,11 +223,19 @@
 
     localStorage.setItem("commandeClient", JSON.stringify(infosClient));
 
-    // Utilisation correcte pour Stripe : un seul prix, quantité = total panier
-    const items = [{
-      price: "price_1RQAblEL9cznbBHR0WpmsM29",
-      quantity: panier.reduce((sum, item) => sum + item.quantite, 0)
-    }];
+    // Correspondance nom produit -> price ID Stripe
+    const priceMap = {
+      "GameBoy Rouge": "price_1RQAblEL9cznbBHR0WpmsM29",
+      "GameBoy Noir": "price_1RQ3DMEL9cznbBHRUyJq2IUa",
+      "GameBoy Orange": "price_1RQAceEL9cznbBHRdKfSlNeP",
+      "GameBoy Violet": "price_1RQAdbEL9cznbBHRo9v8Iz7N"
+    };
+
+    // Préparer items avec price et quantité
+    const items = panier.map(item => ({
+      price: priceMap[item.nom],
+      quantity: item.quantite
+    })).filter(item => item.price !== undefined);
 
     try {
       const response = await fetch('https://gametrash.onrender.com/create-checkout-session', {
@@ -252,6 +260,5 @@
     mettreAJourCompteurPanier();
   });
 </script>
-
 </body>
 </html>
