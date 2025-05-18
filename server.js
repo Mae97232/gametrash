@@ -195,7 +195,7 @@ app.post('/create-checkout-session', async (req, res) => {
         quantity: item.quantity,
       };
     });
-
+console.log("🎯 Création session Stripe sans customer_creation");
    const session = await stripe.checkout.sessions.create({
   payment_method_types: ['card'],
   mode: 'subscription',
@@ -211,7 +211,8 @@ app.post('/create-checkout-session', async (req, res) => {
     enabled: true
   }
 });
-console.log("🎯 Création session Stripe sans customer_creation");
+
+
     res.status(200).json({ url: session.url });
   } catch (error) {
     console.error('Erreur Stripe :', error);
