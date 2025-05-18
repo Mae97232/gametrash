@@ -178,16 +178,10 @@ app.post('/create-checkout-session', async (req, res) => {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
-      line_items: items.map(item => ({
-        price_data: {
-          currency: 'eur',
-          product_data: {
-            name: item.name,
-          },
-          unit_amount: item.price,
-        },
-        quantity: item.quantity,
-      })),
+     line_items: items.map(item => ({
+  price: 'price_1RQAblEL9cznbBHR0WpmsM29',  // ici on utilise le priceId directement
+  quantity: item.quantity,
+})),
       success_url: 'https://mae97232.github.io/gametrash/index.html',
       cancel_url: 'https://mae97232.github.io/gametrash/panier.html',
       customer_email: client.email,
