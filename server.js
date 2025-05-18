@@ -20,6 +20,8 @@ mongoose.connect(process.env.MONGO_URI)
 // Webhook Stripe
 app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   console.log('🚀 Webhook Stripe reçu');
+  console.log("➡️ Mode Stripe :", process.env.STRIPE_SECRET_KEY.includes('sk_live') ? 'LIVE ✅' : 'TEST ❌');
+
 
   const sig = req.headers['stripe-signature'];
   let event;
