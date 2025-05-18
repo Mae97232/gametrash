@@ -40,14 +40,13 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         expand: ['data.price.product']
       });
 
-      // Récupération des détails client
-      const details = session.customer_details || {};
-      const clientName = details.name || "Nom non fourni";
-      const email = details.email || "Email non fourni";
-      const telephone = details.phone || "Téléphone non fourni";
+      const customer = await stripe.customers.retrieve(session.customer);
+      const clientName = customer.name || "Nom non fourni";
+      const email = customer.email || "Email non fourni";
+      const telephone = customer.phone || "Téléphone non fourni";
 
-      const adressePostale = details.address
-        ? `${details.address.line1}, ${details.address.postal_code}, ${details.address.city}`
+      const adressePostale = customer.address
+        ? `${customer.address.line1}, ${customer.address.postal_code}, ${customer.address.city}`
         : "Adresse non fournie";
 
       const emailContent = `
@@ -74,7 +73,7 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
       // Email au client
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
-        to: "maelyck97232@gmail.com",
+        to: email,
         subject: "Merci pour votre commande",
         html: emailContent
       });
@@ -82,7 +81,7 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
       // Email au propriétaire du site
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
-        to: "yorickspprt@gmail.com" ,
+        to: "yorickspprt@gmail.com",
         subject: "Nouvelle commande client",
         html: emailContent
       });
@@ -187,18 +186,18 @@ app.post('/create-checkout-session', async (req, res) => {
       })),
       success_url: 'https://mae97232.github.io/gametrash/index.html',
       cancel_url: 'https://mae97232.github.io/gametrash/panier.html',
-
       customer_email: client.email,
       customer_creation: 'always',
-
       shipping_address_collection: {
         allowed_countries: ['FR']
       },
-
       billing_address_collection: 'required',
-
       phone_number_collection: {
         enabled: true
+      },
+      metadata: {
+        client_nom: client.name || '',
+        client_tel: client.phone || ''
       }
     });
 
@@ -213,7 +212,6 @@ app.post('/create-checkout-session', async (req, res) => {
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
-
 
 // Démarrage du serveur
 app.listen(4242, () => {
