@@ -178,10 +178,10 @@ app.post('/create-checkout-session', async (req, res) => {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
-     line_items: items.map(item => ({
-  price: 'price_1RQAblEL9cznbBHR0WpmsM29',  // ici on utilise le priceId directement
-  quantity: item.quantity,
-})),
+      line_items: items.map(item => ({
+        price: item.priceId,  // Utilisation dynamique du priceId envoyé par le frontend
+        quantity: item.quantity,
+      })),
       success_url: 'https://mae97232.github.io/gametrash/index.html',
       cancel_url: 'https://mae97232.github.io/gametrash/panier.html',
       customer_email: client.email,
@@ -206,7 +206,6 @@ app.post('/create-checkout-session', async (req, res) => {
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
-
 // Démarrage du serveur
 app.listen(4242, () => {
   console.log(`🚀 Serveur démarré sur http://localhost:4242`);
