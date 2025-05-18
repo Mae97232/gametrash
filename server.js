@@ -211,7 +211,7 @@ app.post('/create-checkout-session', async (req, res) => {
     enabled: true
   }
 });
-
+console.log("🎯 Création session Stripe sans customer_creation");
     res.status(200).json({ url: session.url });
   } catch (error) {
     console.error('Erreur Stripe :', error);
