@@ -82,15 +82,13 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         }
       });
 
-      // Email au client
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
-        to: email, // email du client
+        to: email,
         subject: "Merci pour votre commande",
         html: emailContent
       });
 
-      // Email au propriétaire du site
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
         to: "yorickspprt@gmail.com",
@@ -182,9 +180,19 @@ app.post('/send-email', async (req, res) => {
 app.post('/create-checkout-session', async (req, res) => {
   const { items, client } = req.body;
 
+  console.log("🧾 Données reçues :", req.body);
+
+  if (!Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ error: "Aucun article fourni." });
+  }
+
+  items.forEach((item, index) => {
+    console.log(`📦 Item[${index}] =`, item);
+  });
+
   try {
     const lineItems = items.map(item => {
-      const priceId = priceMap[item.name];
+      const priceId = priceMap[item.name?.trim()];
       if (!priceId) {
         throw new Error(`Produit inconnu : ${item.name}`);
       }
