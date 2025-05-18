@@ -17,7 +17,7 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Connecté à MongoDB Atlas'))
   .catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
 
-// Webhook Stripe - DOIT venir avant les autres bodyParser
+// Webhook Stripe
 app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   console.log('🚀 Webhook Stripe reçu');
 
@@ -35,18 +35,21 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
 
+    console.log("🎯 Session Stripe reçue :");
+    console.log(JSON.stringify(session, null, 2));
+
     try {
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
         expand: ['data.price.product']
       });
 
-      const customer = await stripe.customers.retrieve(session.customer);
-      const clientName = customer.name || "Nom non fourni";
-      const email = customer.email || "Email non fourni";
-      const telephone = customer.phone || "Téléphone non fourni";
+      const details = session.customer_details || {};
+      const clientName = details.name || "Nom non fourni";
+      const email = details.email || "Email non fourni";
+      const telephone = details.phone || "Téléphone non fourni";
 
-      const adressePostale = customer.address
-        ? `${customer.address.line1}, ${customer.address.postal_code}, ${customer.address.city}`
+      const adressePostale = details.address
+        ? `${details.address.line1}, ${details.address.postal_code}, ${details.address.city}`
         : "Adresse non fournie";
 
       const emailContent = `
@@ -73,7 +76,7 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
       // Email au client
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
-        to: email,
+        to: email, // email du client
         subject: "Merci pour votre commande",
         html: emailContent
       });
@@ -97,7 +100,7 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
   res.json({ received: true });
 });
 
-// Middleware après le webhook
+// Middleware
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -194,10 +197,6 @@ app.post('/create-checkout-session', async (req, res) => {
       billing_address_collection: 'required',
       phone_number_collection: {
         enabled: true
-      },
-      metadata: {
-        client_nom: client.name || '',
-        client_tel: client.phone || ''
       }
     });
 
