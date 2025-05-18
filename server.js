@@ -74,7 +74,7 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
       // Email au client
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
-        to: email,
+        to: "maelyck97232@gmail.com",
         subject: "Merci pour votre commande",
         html: emailContent
       });
@@ -82,7 +82,7 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
       // Email au propriétaire du site
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
-        to: "maelyck97232@gmail.com",
+        to: "yorickspprt@gmail.com" ,
         subject: "Nouvelle commande client",
         html: emailContent
       });
