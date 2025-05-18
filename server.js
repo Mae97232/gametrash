@@ -18,6 +18,14 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Connecté à MongoDB Atlas'))
   .catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
 
+// Mapping produit -> priceId Stripe
+const priceMap = {
+  "GameBoy Rouge": "price_1RQAblEL9cznbBHR0WpmsM29",
+  "GameBoy Noir": "price_1RQ3DMEL9cznbBHRUyJq2IUa",
+  "GameBoy Orange": "price_1RQAceEL9cznbBHRdKfSlNeP",
+  "GameBoy Violet": "price_1RQAdbEL9cznbBHRo9v8Iz7N"
+};
+
 // Webhook Stripe
 app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   console.log('🚀 Webhook Stripe reçu');
@@ -175,13 +183,21 @@ app.post('/create-checkout-session', async (req, res) => {
   const { items, client } = req.body;
 
   try {
+    const lineItems = items.map(item => {
+      const priceId = priceMap[item.name];
+      if (!priceId) {
+        throw new Error(`Produit inconnu : ${item.name}`);
+      }
+      return {
+        price: priceId,
+        quantity: item.quantity,
+      };
+    });
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
-      line_items: items.map(item => ({
-        price: item.priceId,  // Utilisation dynamique du priceId envoyé par le frontend
-        quantity: item.quantity,
-      })),
+      line_items: lineItems,
       success_url: 'https://mae97232.github.io/gametrash/index.html',
       cancel_url: 'https://mae97232.github.io/gametrash/panier.html',
       customer_email: client.email,
