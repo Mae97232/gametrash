@@ -18,7 +18,10 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('✅ Connecté à MongoDB Atlas'))
   .catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
 
-// Mapping produit -> priceId Stripe (prices doivent être ONE-TIME, pas récurrents)
+// Modèle de commande
+const Order = require('./models/order');
+
+// Mapping produit -> priceId Stripe
 const priceMap = {
   "GameBoy Rouge": "price_1RQAblEL9cznbBHR0WpmsM29",
   "GameBoy Noir": "price_1RQ3DMEL9cznbBHRUyJq2IUa",
@@ -56,16 +59,20 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         : "Adresse non fournie";
 
       const emailContent = `
-        <h2>Nouvelle commande reçue</h2>
-        <p><strong>Nom :</strong> ${clientName}</p>
-        <p><strong>Email :</strong> ${email}</p>
-        <p><strong>Téléphone :</strong> ${telephone}</p>
-        <p><strong>Adresse :</strong> ${adressePostale}</p>
-        <ul>
-          ${lineItems.data.map(item =>
-            `<li>${item.quantity} x ${item.description} (${(item.price.unit_amount / 100).toFixed(2)} EUR)</li>`
-          ).join('')}
-        </ul>
+        <div style="font-family: Arial, sans-serif; color: #333;">
+          <h2 style="color: #4CAF50;">🎮 Nouvelle commande GameTrash</h2>
+          <p><strong>Nom :</strong> ${clientName}</p>
+          <p><strong>Email :</strong> ${email}</p>
+          <p><strong>Téléphone :</strong> ${telephone}</p>
+          <p><strong>Adresse :</strong> ${adressePostale}</p>
+          <h3>Détails de la commande :</h3>
+          <ul>
+            ${lineItems.data.map(item => `
+              <li>${item.quantity} × <strong>${item.description}</strong> — ${(item.price.unit_amount / 100).toFixed(2)} €</li>
+            `).join('')}
+          </ul>
+          <p style="margin-top: 20px;">Merci pour votre commande !</p>
+        </div>
       `;
 
       const transporter = nodemailer.createTransport({
@@ -76,21 +83,36 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         }
       });
 
+      // Envoi au client
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
-        to: "Maelyck97232@gmail.com",
+        to: email,
         subject: "Merci pour votre commande",
         html: emailContent
       });
 
+      // Envoi à toi + fournisseur
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
-        to: "yorickspprt@gmail.com",
+        to: ["yorickspprt@gmail.com", "yorick-972@outlook.com"],
         subject: "Nouvelle commande client",
         html: emailContent
       });
 
-      console.log('✅ Emails envoyés avec succès !');
+      // Sauvegarde MongoDB
+      await Order.create({
+        clientName,
+        email,
+        telephone,
+        adresse: adressePostale,
+        items: lineItems.data.map(item => ({
+          description: item.description,
+          quantity: item.quantity,
+          price: item.price.unit_amount / 100
+        }))
+      });
+
+      console.log('✅ Emails envoyés & commande enregistrée');
     } catch (err) {
       console.error('❌ Erreur lors du traitement de la commande :', err);
     }
@@ -106,7 +128,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// User model (assure-toi d’avoir ./models/user.js)
+// User model
 const User = require('./models/user');
 
 // Enregistrement utilisateur
@@ -174,15 +196,9 @@ app.post('/send-email', async (req, res) => {
 app.post('/create-checkout-session', async (req, res) => {
   const { items, client } = req.body;
 
-  console.log("🧾 Données reçues :", req.body);
-
   if (!Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: "Aucun article fourni." });
   }
-
-  items.forEach((item, index) => {
-    console.log(`📦 Item[${index}] =`, item);
-  });
 
   try {
     const lineItems = items.map(item => {
@@ -195,23 +211,22 @@ app.post('/create-checkout-session', async (req, res) => {
         quantity: item.quantity,
       };
     });
-console.log("🎯 Création session Stripe sans customer_creation");
-   const session = await stripe.checkout.sessions.create({
-  payment_method_types: ['card'],
-  mode: 'subscription',
-  line_items: lineItems,
-  success_url: 'https://mae97232.github.io/gametrash/index.html',
-  cancel_url: 'https://mae97232.github.io/gametrash/panier.html',
-  customer_email: client.email, // ça, tu peux garder
-  shipping_address_collection: {
-    allowed_countries: ['FR']
-  },
-  billing_address_collection: 'required',
-  phone_number_collection: {
-    enabled: true
-  }
-});
 
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'subscription',
+      line_items: lineItems,
+      success_url: 'https://mae97232.github.io/gametrash/index.html',
+      cancel_url: 'https://mae97232.github.io/gametrash/panier.html',
+      customer_email: client.email,
+      shipping_address_collection: {
+        allowed_countries: ['FR']
+      },
+      billing_address_collection: 'required',
+      phone_number_collection: {
+        enabled: true
+      }
+    });
 
     res.status(200).json({ url: session.url });
   } catch (error) {
@@ -220,11 +235,12 @@ console.log("🎯 Création session Stripe sans customer_creation");
   }
 });
 
-// Page d’accueil (static)
+// Page d’accueil
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
-// Démarrage du serveur
+
+// Serveur
 app.listen(4242, () => {
   console.log(`🚀 Serveur démarré sur http://localhost:4242`);
 });
