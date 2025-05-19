@@ -216,7 +216,7 @@ app.post('/create-checkout-session', async (req, res) => {
       payment_method_types: ['card'],
       mode: 'subscription',
       line_items: lineItems,
-      success_url: 'https://mae97232.github.io/gametrash/index.html',
+      success_url: 'https://mae97232.github.io/gametrash/index.html?payment=success',
       cancel_url: 'https://mae97232.github.io/gametrash/panier.html',
       customer_email: client.email,
       shipping_address_collection: {
