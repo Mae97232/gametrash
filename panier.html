@@ -7,6 +7,7 @@
    <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
    <link rel="stylesheet" href="design/style.css" />
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+   <script src="https://js.stripe.com/v3/"></script>
 </head>
 
 <body>
@@ -19,7 +20,6 @@
          <span class="slogan">L'expert des GameBoy – La nostalgie au creux de vos mains</span>
       </div>
    </a>
-      </div>
       <div class="menu-burger" onclick="toggleMenu(this)">
          <div class="bar"></div>
          <div class="bar"></div>
@@ -35,19 +35,17 @@
          <li><a href="espace-mon-client.html"><i class="fas fa-user"></i> Espace client</a></li>
       </ul>
    </nav>
+
   <div id="panierContainer" style="padding: 2rem;"></div>
 
   <!-- ✅ FOOTER -->
   <footer class="footer">
    <div class="footer-container">
-      <!-- Logo + Slogan -->
       <div class="footer-section logo-section">
          <img src="images/game2.png" alt="Game Trash Logo" class="footer-logo">
          <p class="footer-brand">Game Trash</p>
          <p class="footer-slogan">L’expert des GameBoy – Nostalgie garantie</p>
       </div>
-
-      <!-- Liens utiles -->
       <div class="footer-section links-section">
          <h4>Liens utiles</h4>
          <ul>
@@ -56,8 +54,6 @@
             <li><a href="contact.html">Contact</a></li>
          </ul>
       </div>
-
-      <!-- Paiement -->
       <div class="footer-section paiement-section">
          <h4>Paiement sécurisé</h4>
          <div class="paiement-logos">
@@ -68,180 +64,192 @@
          </div>
       </div>
    </div>
-
    <div class="footer-bottom">
       <p>&copy; 2025 Game Trash. Tous droits réservés.</p>
    </div>
 </footer>
 
-  <script>
-    function toggleMenu(burger) {
-      burger.classList.toggle("active");
-      const nav = document.getElementById("navLinks");
-      nav.classList.toggle("show");
-    }
-    let panier = JSON.parse(localStorage.getItem("panier")) || [];
-    function sauvegarderPanier() {
-      localStorage.setItem("panier", JSON.stringify(panier));
-      mettreAJourCompteurPanier();
-    }
-    function mettreAJourCompteurPanier() {
-      const totalArticles = panier.reduce((acc, item) => acc + item.quantite, 0);
-      const compteur = document.getElementById("panierCount");
-      if (compteur) compteur.textContent = `(${totalArticles})`;
-    }
-    function modifierQuantite(nomProduit, action) {
-      const produit = panier.find(item => item.nom === nomProduit);
-      if (!produit) return;
-      if (action === 'augmenter') produit.quantite++;
-      else if (action === 'diminuer') {
-        produit.quantite--;
-        if (produit.quantite <= 0) {
-          panier = panier.filter(item => item.nom !== nomProduit);
-        }
+<script>
+  function toggleMenu(burger) {
+    burger.classList.toggle("active");
+    const nav = document.getElementById("navLinks");
+    nav.classList.toggle("show");
+  }
+
+  let panier = JSON.parse(localStorage.getItem("panier")) || [];
+
+  function sauvegarderPanier() {
+    localStorage.setItem("panier", JSON.stringify(panier));
+    mettreAJourCompteurPanier();
+  }
+
+  function mettreAJourCompteurPanier() {
+    const totalArticles = panier.reduce((acc, item) => acc + item.quantite, 0);
+    const compteur = document.getElementById("panierCount");
+    if (compteur) compteur.textContent = `(${totalArticles})`;
+  }
+
+  function modifierQuantite(nomProduit, action) {
+    const produit = panier.find(item => item.nom === nomProduit);
+    if (!produit) return;
+    if (action === 'augmenter') produit.quantite++;
+    else if (action === 'diminuer') {
+      produit.quantite--;
+      if (produit.quantite <= 0) {
+        panier = panier.filter(item => item.nom !== nomProduit);
       }
-      sauvegarderPanier();
-      afficherPanier();
     }
-    function supprimerProduit(nomProduit) {
-      panier = panier.filter(item => item.nom !== nomProduit);
-      sauvegarderPanier();
-      afficherPanier();
+    sauvegarderPanier();
+    afficherPanier();
+  }
+
+  function supprimerProduit(nomProduit) {
+    panier = panier.filter(item => item.nom !== nomProduit);
+    sauvegarderPanier();
+    afficherPanier();
+  }
+
+  function afficherPanier() {
+    const panierContainer = document.getElementById("panierContainer");
+    panierContainer.innerHTML = "";
+    if (panier.length === 0) {
+      panierContainer.innerHTML = "<p>Votre panier est vide.</p>";
+      return;
     }
-    function afficherPanier() {
-      const panierContainer = document.getElementById("panierContainer");
-      panierContainer.innerHTML = "";
-      if (panier.length === 0) {
-        panierContainer.innerHTML = "<p>Votre panier est vide.</p>";
-        return;
-      }
-      panier.forEach(item => {
-        const div = document.createElement("div");
-        div.classList.add("panier-item");
-        div.style.marginBottom = "1.5rem";
-        div.innerHTML = `
-          <div style="display: flex; align-items: center; gap: 1rem;">
-            <img src="${item.image}" alt="${item.nom}" style="width: 100px; border-radius: 8px;">
-            <div>
-              <p><strong>${item.nom}</strong></p>
-              <p>${item.prix}€ x ${item.quantite}</p>
-              <div style="margin: 0.5rem 0;">
-                <button onclick="modifierQuantite('${item.nom}', 'diminuer')">−</button>
-                <span style="margin: 0 1rem;">${item.quantite}</span>
-                <button onclick="modifierQuantite('${item.nom}', 'augmenter')">+</button>
-              </div>
-              <button onclick="supprimerProduit('${item.nom}')">🗑️ Supprimer</button>
+
+    panier.forEach(item => {
+      const div = document.createElement("div");
+      div.classList.add("panier-item");
+      div.style.marginBottom = "1.5rem";
+      div.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <img src="${item.image}" alt="${item.nom}" style="width: 100px; border-radius: 8px;">
+          <div>
+            <p><strong>${item.nom}</strong></p>
+            <p>${item.prix}€ x ${item.quantite}</p>
+            <div style="margin: 0.5rem 0;">
+              <button onclick="modifierQuantite('${item.nom}', 'diminuer')">−</button>
+              <span style="margin: 0 1rem;">${item.quantite}</span>
+              <button onclick="modifierQuantite('${item.nom}', 'augmenter')">+</button>
             </div>
+            <button onclick="supprimerProduit('${item.nom}')">🗑️ Supprimer</button>
           </div>
-        `;
-        panierContainer.appendChild(div);
-      });
-      const total = panier.reduce((sum, item) => sum + item.prix * item.quantite, 0);
-      const totalDiv = document.createElement("div");
-      totalDiv.innerHTML = `<h3>Total à payer : ${total}€</h3>`;
-      totalDiv.style.marginTop = "2rem";
-      panierContainer.appendChild(totalDiv);
-      let utilisateur = null;
-      try {
-        utilisateur = JSON.parse(localStorage.getItem("utilisateurConnecte"));
-      } catch (e) {
-        utilisateur = null;
-      }
-      if (!utilisateur) {
-        const loginPrompt = document.createElement("div");
-        loginPrompt.innerHTML = `
-          <p style="margin-top: 2rem;"> Vous devez être connecté pour finaliser votre commande.</p>
-          <button onclick="window.location.href='espace-mon-client.html'">Se connecter</button>
-        `;
-        panierContainer.appendChild(loginPrompt);
-        return;
-      }
-      const formulaireDiv = document.createElement("div");
-      formulaireDiv.className = "formulaire-livraison";
-      formulaireDiv.style.marginTop = "2rem";
-      formulaireDiv.innerHTML = `
-        <h3>Adresse de livraison</h3>
-        <div id="adresseParDefaut">
-          <p><strong>Nom :</strong> ${utilisateur.nom} ${utilisateur.prénom}</p>
-          <p><strong>Adresse :</strong> ${utilisateur.adresse}, ${utilisateur.codePostal} ${utilisateur.ville}</p>
-          <p><strong>Email :</strong> ${utilisateur.email}</p>
-          <p><strong>Téléphone :</strong> ${utilisateur.telephone}</p>
-          <button type="button" onclick="document.getElementById('formPerso').style.display='block'">✏️ Utiliser une autre adresse</button>
         </div>
-        <form id="formPerso" style="display: none; margin-top: 1rem;">
-          <input type="text" id="nom" placeholder="Nom" required />
-          <input type="text" id="prénom" placeholder="Prénom" required />
-          <input type="text" id="adresse" placeholder="Adresse" required />
-          <input type="text" id="codepostal" placeholder="Code postal" required />
-          <input type="text" id="ville" placeholder="Ville" required />
-          <input type="email" id="email" placeholder="Email" required />
-          <input type="tel" id="tel" placeholder="Téléphone" required />
-        </form>
- <button type="button" class="btn-valider" onclick="verifierConnexionAvantAchat()">✅ Valider le panier</button>
       `;
-      panierContainer.appendChild(formulaireDiv);
-    }
-    async function verifierConnexionAvantAchat() {
-      let utilisateur;
-      try {
-        utilisateur = JSON.parse(localStorage.getItem("utilisateurConnecte"));
-      } catch (e) {
-        utilisateur = null;
-      }
-      if (!utilisateur) {
-        alert("Vous devez être connecté pour finaliser votre achat.");
-        window.location.href = "espace-mon-client.html";
-        return;
-      }
-      const formVisible = document.getElementById("formPerso").style.display !== "none";
-      const infosClient = formVisible
-        ? {
-            nom: document.getElementById("nom").value + " " + document.getElementById("prénom").value,
-            adresse: document.getElementById("adresse").value,
-            codePostal: document.getElementById("codepostal").value,
-            ville: document.getElementById("ville").value,
-            email: document.getElementById("email").value,
-            tel: document.getElementById("tel").value
-          }
-        : {
-            nom: utilisateur.nom + " " + utilisateur.prénom,
-            adresse: utilisateur.adresse,
-            codePostal: utilisateur.codePostal,
-            ville: utilisateur.ville,
-            email: utilisateur.email,
-            tel: utilisateur.telephone
-          };
-      localStorage.setItem("commandeClient", JSON.stringify(infosClient));
-    const items = panier.map(produit => ({
-  name: produit.nom,
-  price: Math.round(produit.prix * 100), // ✅ conversion en centimes
-  quantity: produit.quantite
-}));
-
-      try {
-       const response = await fetch('https://gametrash.onrender.com/create-checkout-session', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ items })
-        });
-        const data = await response.json();
-        if (data.url) {
-          window.location.href = data.url;
-        } else {
-          alert("Erreur : la session Stripe n'a pas pu être créée.");
-        }
-      } catch (err) {
-        console.error(err);
-        alert("Erreur de communication avec le serveur.");
-      }
-    }
-    document.addEventListener("DOMContentLoaded", function () {
-      afficherPanier();
-      mettreAJourCompteurPanier();
+      panierContainer.appendChild(div);
     });
-  </script>
 
+    const total = panier.reduce((sum, item) => sum + item.prix * item.quantite, 0);
+    const totalDiv = document.createElement("div");
+    totalDiv.innerHTML = `<h3>Total à payer : ${total}€</h3>`;
+    totalDiv.style.marginTop = "2rem";
+    panierContainer.appendChild(totalDiv);
+
+    let utilisateur = null;
+    try {
+      utilisateur = JSON.parse(localStorage.getItem("utilisateurConnecte"));
+    } catch (e) {
+      utilisateur = null;
+    }
+
+    if (!utilisateur) {
+      const loginPrompt = document.createElement("div");
+      loginPrompt.innerHTML = `
+        <p style="margin-top: 2rem;">Vous devez être connecté pour finaliser votre commande.</p>
+        <button onclick="window.location.href='espace-mon-client.html'">Se connecter</button>
+      `;
+      panierContainer.appendChild(loginPrompt);
+      return;
+    }
+
+    const formulaireDiv = document.createElement("div");
+    formulaireDiv.className = "formulaire-livraison";
+    formulaireDiv.style.marginTop = "2rem";
+    formulaireDiv.innerHTML = `
+      <h3>Adresse de livraison</h3>
+      <div id="adresseParDefaut">
+        <p><strong>Nom :</strong> ${utilisateur.nom} ${utilisateur.prénom}</p>
+        <p><strong>Adresse :</strong> ${utilisateur.adresse}, ${utilisateur.codePostal} ${utilisateur.ville}</p>
+        <p><strong>Email :</strong> ${utilisateur.email}</p>
+        <p><strong>Téléphone :</strong> ${utilisateur.telephone}</p>
+        <button type="button" onclick="document.getElementById('formPerso').style.display='block'">✏️ Utiliser une autre adresse</button>
+      </div>
+      <form id="formPerso" style="display: none; margin-top: 1rem;">
+        <input type="text" id="nom" placeholder="Nom" required />
+        <input type="text" id="prénom" placeholder="Prénom" required />
+        <input type="text" id="adresse" placeholder="Adresse" required />
+        <input type="text" id="codepostal" placeholder="Code postal" required />
+        <input type="text" id="ville" placeholder="Ville" required />
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="tel" id="tel" placeholder="Téléphone" required />
+      </form>
+      <button type="button" class="btn-valider" onclick="verifierConnexionAvantAchat()">✅ Valider le panier</button>
+    `;
+    panierContainer.appendChild(formulaireDiv);
+  }
+
+  async function verifierConnexionAvantAchat() {
+    let utilisateur;
+    try {
+      utilisateur = JSON.parse(localStorage.getItem("utilisateurConnecte"));
+    } catch (e) {
+      utilisateur = null;
+    }
+
+    if (!utilisateur) {
+      alert("Vous devez être connecté pour finaliser votre achat.");
+      window.location.href = "espace-mon-client.html";
+      return;
+    }
+
+    const formVisible = document.getElementById("formPerso").style.display !== "none";
+    const infosClient = formVisible
+      ? {
+          nom: document.getElementById("nom").value + " " + document.getElementById("prénom").value,
+          adresse: document.getElementById("adresse").value,
+          codePostal: document.getElementById("codepostal").value,
+          ville: document.getElementById("ville").value,
+          email: document.getElementById("email").value,
+          tel: document.getElementById("tel").value
+        }
+      : {
+          nom: utilisateur.nom + " " + utilisateur.prénom,
+          adresse: utilisateur.adresse,
+          codePostal: utilisateur.codePostal,
+          ville: utilisateur.ville,
+          email: utilisateur.email,
+          tel: utilisateur.telephone
+        };
+
+    localStorage.setItem("commandeClient", JSON.stringify(infosClient));
+
+    const items = panier.map(item => ({
+      name: item.nom,
+      quantity: item.quantite
+    }));
+
+    try {
+      const response = await fetch('https://gametrash.onrender.com/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items, client: infosClient })
+      });
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert("Erreur : la session Stripe n'a pas pu être créée.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Erreur de communication avec le serveur.");
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    afficherPanier();
+    mettreAjoutCompteurPanier();
+  });
+</script>
 </body>
 </html>

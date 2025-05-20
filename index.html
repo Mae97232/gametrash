@@ -12,14 +12,13 @@
 <body>
    <!-- ✅ NAVBAR -->
    <nav class="navbar">
-   <a href="index.html" class="logo-texte">
-      <img src="images/game2.png" alt="Logo Game Trash" class="logo-header" />
-      <div class="texte-header">
-         <h1>Game Trash</h1>
-         <span class="slogan">L'expert des GameBoy – La nostalgie au creux de vos mains</span>
-      </div>
-   </a>
-      </div>
+      <a href="index.html" class="logo-texte">
+         <img src="images/game2.png" alt="Logo Game Trash" class="logo-header" />
+         <div class="texte-header">
+            <h1>Game Trash</h1>
+            <span class="slogan">L'expert des GameBoy – La nostalgie au creux de vos mains</span>
+         </div>
+      </a>
       <div class="menu-burger" onclick="toggleMenu(this)">
          <div class="bar"></div>
          <div class="bar"></div>
@@ -56,30 +55,43 @@
       <p id="top">
          <span class="Italic">Rejouez aux classiques. Revivez la magie. Découvrez nos modèles dès maintenant</span>
       </p>
-<section id="Flexbox-game">
-   <div class="product-card noir">
-      <img src="images/Gameboy-black.jpg" alt="GameBoy Noire" />
-      <h3>GameBoy Noire</h3>
-      <a href="produit.html" class="btn">Voir le produit</a>
-   </div>
-   <div class="product-card rouge">
-      <img src="images/Gameboy-red.webp" alt="GameBoy Rouge" />
-      <h3>GameBoy Rouge</h3>
-      <a href="produit2.html" class="btn">Voir le produit</a>
-   </div>
-   <div class="product-card orange">
-      <img src="images/Gameboy-orange.jpg" alt="GameBoy Orange" />
-      <h3>GameBoy Orange</h3>
-      <a href="produit3.html" class="btn">Voir le produit</a>
-   </div>
-   <div class="product-card violet">
-      <img src="images/Gameboy-purple.webp" alt="GameBoy Violet" />
-      <h3>GameBoy Violet</h3>
-      <a href="produit4.html" class="btn">Voir le produit</a>
-   </div>
-</section>
+
+      <section id="Flexbox-game">
+         <div class="product-card noir">
+            <img src="images/Gameboy-black.jpg" alt="GameBoy Noire" />
+            <h3>GameBoy Noire</h3>
+            <a href="produit.html" class="btn">Voir le produit</a>
+         </div>
+         <div class="product-card rouge">
+            <img src="images/Gameboy-red.webp?v=1" alt="GameBoy Rouge" />
+            <h3>GameBoy Rouge</h3>
+            <a href="produit2.html" class="btn">Voir le produit</a>
+         </div>
+         <div class="product-card orange">
+            <img src="images/Gameboy-orange.jpg" alt="GameBoy Orange" />
+            <h3>GameBoy Orange</h3>
+            <a href="produit3.html" class="btn">Voir le produit</a>
+         </div>
+         <div class="product-card violet">
+            <img src="images/Gameboy-purple.webp" alt="GameBoy Violet" />
+            <h3>GameBoy Violet</h3>
+            <a href="produit4.html" class="btn">Voir le produit</a>
+         </div>
+      </section>
+
       <section class="apropos-accueil" id="apropos">
          <div class="conteneur-apropos">
+            
+            <!-- ✅ VIDEO À GAUCHE -->
+            <div class="video-background">
+               <video id="bgVideo" autoplay loop playsinline muted>
+                  <source src="vidéos/Gameboy R36S video.mp4" type="video/mp4">
+                  Votre navigateur ne supporte pas la vidéo.
+               </video>
+               <button id="soundToggle">🔊</button>
+            </div>
+
+            <!-- ✅ TEXTE À DROITE -->
             <div class="texte-apropos">
                <h2>À propos de GameBoyStore</h2>
                <p>
@@ -91,51 +103,46 @@
                   Rejoignez la communauté des vrais gamers rétro.
                </p>
                <a href="a-propos.html" class="btn">En savoir plus</a>
+                <img src="images/game2.png" alt="Dessin GameBoy" class="image-apropos" />
             </div>
-            <div class="image-apropos">
-               <img src="images/game2.png" alt="GameBoy Nostalgie" />
-            </div>
+
+      
          </div>
       </section>
    </section>
 
-
    <!-- ✅ FOOTER -->
-  <footer class="footer">
-   <div class="footer-container">
-      <!-- Logo + Slogan -->
-      <div class="footer-section logo-section">
-         <img src="images/game2.png" alt="Game Trash Logo" class="footer-logo">
-         <p class="footer-brand">Game Trash</p>
-         <p class="footer-slogan">L’expert des GameBoy – Nostalgie garantie</p>
-      </div>
-
-      <!-- Liens utiles -->
-      <div class="footer-section links-section">
-         <h4>Liens utiles</h4>
-         <ul>
-            <li><a href="a-propos.html">À propos</a></li>
-            <li><a href="faq.html">FAQ</a></li>
-            <li><a href="contact.html">Contact</a></li>
-         </ul>
-      </div>
-
-      <!-- Paiement -->
-      <div class="footer-section paiement-section">
-         <h4>Paiement sécurisé</h4>
-         <div class="paiement-logos">
-            <img src="images/paypal logo.png" alt="PayPal">
-            <img src="images/visa logo.png" alt="Visa">
-            <img src="images/mastercard.png" alt="MasterCard">
-            <img src="images/apple-pay logo.png" alt="Apple Pay">
+   <footer class="footer">
+      <div class="footer-container">
+         <div class="footer-section logo-section">
+            <img src="images/game2.png" alt="Game Trash Logo" class="footer-logo">
+            <p class="footer-brand">Game Trash</p>
+            <p class="footer-slogan">L’expert des GameBoy – Nostalgie garantie</p>
+         </div>
+         <div class="footer-section links-section">
+            <h4>Liens utiles</h4>
+            <ul>
+               <li><a href="a-propos.html">À propos</a></li>
+               <li><a href="faq.html">FAQ</a></li>
+               <li><a href="contact.html">Contact</a></li>
+            </ul>
+         </div>
+         <div class="footer-section paiement-section">
+            <h4>Paiement sécurisé</h4>
+            <div class="paiement-logos">
+               <img src="images/paypal logo.png" alt="PayPal">
+               <img src="images/visa logo.png" alt="Visa">
+               <img src="images/mastercard.png" alt="MasterCard">
+               <img src="images/apple-pay logo.png" alt="Apple Pay">
+            </div>
          </div>
       </div>
-   </div>
+      <div class="footer-bottom">
+         <p>&copy; 2025 Game Trash. Tous droits réservés.</p>
+      </div>
+   </footer>
 
-   <div class="footer-bottom">
-      <p>&copy; 2025 Game Trash. Tous droits réservés.</p>
-   </div>
-</footer>
+   <!-- ✅ SCRIPTS -->
    <script src="public/script.js"></script>
 
    <script>
@@ -148,10 +155,12 @@
       document.querySelectorAll("#navLinks a").forEach(link => {
          link.addEventListener("click", () => {
             document.getElementById("navLinks").classList.remove("active");
-            document.querySelector(".menu-toggle").classList.remove("active");
+            document.querySelector(".menu-toggle")?.classList.remove("active");
          });
       });
+   </script>
 
+   <script>
       function mettreAJourCompteurPanier() {
          const panier = JSON.parse(localStorage.getItem("panier")) || [];
          const totalArticles = panier.reduce((acc, item) => acc + item.quantite, 0);
@@ -163,28 +172,28 @@
    </script>
 
    <script>
-      document.getElementById('emailForm')?.addEventListener('submit', function(e) {
-         e.preventDefault();
+      document.addEventListener("DOMContentLoaded", function () {
+         const urlParams = new URLSearchParams(window.location.search);
+         const paymentSuccess = urlParams.get("payment");
 
-         const to = document.getElementById('to').value;
-         const subject = document.getElementById('subject').value;
-         const text = document.getElementById('text').value;
+         if (paymentSuccess === "success") {
+            localStorage.removeItem("panier");
+            mettreAJourCompteurPanier();
+            window.history.replaceState({}, document.title, "index.html");
+         }
+      });
+   </script>
 
-         fetch('/send-email', {
-            method: 'POST',
-            headers: {
-               'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ to, subject, text })
-         })
-         .then(response => response.text())
-         .then(data => {
-            document.getElementById('resultat').innerText = data;
-         })
-         .catch(error => {
-            console.error('Erreur :', error);
-            document.getElementById('resultat').innerText = "Erreur lors de l'envoi.";
-         });
+   <!-- ✅ Bouton mute/son -->
+   <script>
+      const bgVideo = document.getElementById("bgVideo");
+      const soundToggle = document.getElementById("soundToggle");
+
+      bgVideo.muted = true;
+
+      soundToggle.addEventListener("click", () => {
+         bgVideo.muted = !bgVideo.muted;
+         soundToggle.textContent = bgVideo.muted ? "🔊" : "🔇";
       });
    </script>
 </body>
