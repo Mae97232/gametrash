@@ -85,6 +85,32 @@
       localStorage.removeItem('utilisateurConnecte');
       window.location.href = 'connexion.html';
     });
+
+    // ✅ Afficher l'historique des commandes
+const commandesContainer = document.getElementById('historiqueCommandes');
+const historique = JSON.parse(localStorage.getItem("historiqueCommandes")) || [];
+
+if (historique.length === 0) {
+  commandesContainer.innerHTML = "<p>Aucune commande passée.</p>";
+} else {
+  historique
+    .filter(cmd => cmd.client.email === utilisateur.email)
+    .reverse()
+    .forEach((commande, index) => {
+      const bloc = document.createElement("div");
+      bloc.classList.add("commande");
+      bloc.innerHTML = `
+        <h3>Commande #${historique.length - index} - ${commande.date}</h3>
+        <ul>
+          ${commande.produits
+            .map(p => `<li>${p.quantite} × ${p.nom} - ${p.prix}€</li>`)
+            .join("")}
+        </ul>
+        <hr />
+      `;
+      commandesContainer.appendChild(bloc);
+    });
+}
   </script>
 </body>
 </html>
