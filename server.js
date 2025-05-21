@@ -181,43 +181,41 @@ app.post('/send-email', async (req, res) => {
 });
 
 app.post("/create-checkout-session", async (req, res) => {
-  console.log("📦 Reçu dans /create-checkout-session :", JSON.stringify(req.body, null, 2));
-
-  const { items, client } = req.body;
-
-  if (!items || !Array.isArray(items) || items.length === 0) {
-    return res.status(400).json({ error: "Items invalides ou vides" });
-  }
-
-  for (const item of items) {
-    if (!item.nom || typeof item.nom !== "string" || item.nom.trim() === "") {
-      return res.status(400).json({ error: "Nom du produit manquant ou invalide dans un item." });
-    }
-  }
+  console.log("📥 Nouvelle requête POST /create-checkout-session reçue");
+  console.log("🧾 Données reçues :", JSON.stringify(req.body, null, 2));
 
   try {
-    const lineItems = items.map((item) => {
-      const nomProduit = item.nom.trim();
+    const { items, client } = req.body;
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      console.error("❌ Erreur : 'items' manquant ou vide");
+      return res.status(400).json({ error: "'items' est requis et ne peut pas être vide." });
+    }
+
+    if (!client || !client.email) {
+      console.error("❌ Erreur : 'client.email' est requis");
+      return res.status(400).json({ error: "'client.email' est requis." });
+    }
+
+    const lineItems = items.map((item, index) => {
+      const nomProduit = item.nom?.trim();
       const priceId = priceMap[nomProduit];
 
-      console.log(`🔍 Traitement de l'article :`, item);
-      console.log(`➡️ Produit reçu : "${nomProduit}" — ID Stripe trouvé : ${priceId}`);
+      console.log(`🔍 Article [${index}]:`, item);
+      console.log(`🧩 Produit reçu : "${nomProduit}" — ID Stripe : ${priceId}`);
 
       if (!priceId) {
+        console.error(`❌ Produit inconnu dans priceMap : "${nomProduit}"`);
         throw new Error(`Produit inconnu : "${nomProduit}"`);
       }
 
       return {
         price: priceId,
-        quantity: item.quantite || 1, // fallback à 1 si quantite non précisée
+        quantity: item.quantite,
       };
     });
 
-    if (!client || !client.email) {
-      return res.status(400).json({ error: "Email client manquant." });
-    }
-
-    console.log("📤 Envoi à Stripe avec lineItems :", lineItems);
+    console.log("✅ line_items préparés :", lineItems);
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -235,19 +233,20 @@ app.post("/create-checkout-session", async (req, res) => {
       }
     });
 
+    console.log("✅ Session Stripe créée avec succès :", session.id);
     res.json({ id: session.id });
 
   } catch (error) {
-    console.error("❌ Erreur Stripe :", error);
-    res.status(500).json({ error: `Erreur lors de la création de session : ${error.message}` });
+    console.error("❌ Erreur dans /create-checkout-session :", error);
+    res.status(500).json({ error: "Erreur : la session Stripe n'a pas pu être créée." });
   }
-});
+})
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
 
 // Démarrage serveur
-app.listen(4242, () => {
-  console.log(`🚀 Serveur démarré sur http://localhost:4242`);
-})
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Serveur démarré sur port ${PORT}`);
+});
