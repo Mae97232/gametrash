@@ -84,12 +84,12 @@
             
             <!-- ✅ VIDEO À GAUCHE -->
             <div class="video-background">
-               <video id="bgVideo" autoplay loop playsinline muted>
-                  <source src="vidéos/Gameboy R36S video.mp4" type="video/mp4">
-                  Votre navigateur ne supporte pas la vidéo.
-               </video>
-               <button id="soundToggle">🔊</button>
-            </div>
+  <video id="myVideo" autoplay muted loop>
+    <source src="vidéos/Gameboy R36S video.mp4" type="video/mp4">
+    Votre navigateur ne supporte pas la vidéo HTML5.
+  </video>
+  <button id="soundButton">🔇</button>
+</div>
 
             <!-- ✅ TEXTE À DROITE -->
             <div class="texte-apropos">
@@ -186,15 +186,13 @@
 
    <!-- ✅ Bouton mute/son -->
    <script>
-      const bgVideo = document.getElementById("bgVideo");
-      const soundToggle = document.getElementById("soundToggle");
+  const video = document.getElementById('myVideo');
+  const soundButton = document.getElementById('soundButton');
 
-      bgVideo.muted = true;
-
-      soundToggle.addEventListener("click", () => {
-         bgVideo.muted = !bgVideo.muted;
-         soundToggle.textContent = bgVideo.muted ? "🔊" : "🔇";
-      });
-   </script>
+  soundButton.addEventListener('click', () => {
+    video.muted = !video.muted;
+    soundButton.textContent = video.muted ? '🔇' : '🔊';
+  });
+</script>
 </body>
 </html>
