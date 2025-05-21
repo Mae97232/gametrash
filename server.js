@@ -196,16 +196,25 @@ app.post('/send-email', async (req, res) => {
 app.post('/create-checkout-session', async (req, res) => {
   const { items, client } = req.body;
 
+  console.log("📦 Reçu dans /create-checkout-session :");
+  console.log(JSON.stringify(req.body, null, 2));
+
   if (!Array.isArray(items) || items.length === 0) {
+    console.error("❌ Aucun article fourni dans la requête.");
     return res.status(400).json({ error: "Aucun article fourni." });
   }
 
   try {
     const lineItems = items.map(item => {
-      const priceId = priceMap[item.name?.trim()];
+      console.log("🔍 Traitement de l'article :", item);
+      const name = item?.name?.trim();
+      const priceId = priceMap[name];
+      console.log(`➡️ Produit : ${name}, ID Stripe trouvé : ${priceId}`);
+
       if (!priceId) {
         throw new Error(`Produit inconnu : ${item.name}`);
       }
+
       return {
         price: priceId,
         quantity: item.quantity,
@@ -214,7 +223,7 @@ app.post('/create-checkout-session', async (req, res) => {
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-     mode: 'payment',
+      mode: 'payment',
       line_items: lineItems,
       success_url: 'https://mae97232.github.io/gametrash/index.html?payment=success',
       cancel_url: 'https://mae97232.github.io/gametrash/panier.html',
@@ -228,9 +237,10 @@ app.post('/create-checkout-session', async (req, res) => {
       }
     });
 
+    console.log("✅ Session Stripe créée :", session.id);
     res.status(200).json({ url: session.url });
   } catch (error) {
-    console.error('Erreur Stripe :', error);
+    console.error('❌ Erreur Stripe :', error);
     res.status(500).json({ error: error.message || 'Erreur lors de la création de la session de paiement.' });
   }
 });
