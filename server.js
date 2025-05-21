@@ -83,7 +83,6 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         }
       });
 
-      // Envoi au client
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
         to: email,
@@ -91,7 +90,6 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         html: emailContent
       });
 
-      // Envoi à toi + fournisseur
       await transporter.sendMail({
         from: process.env.GMAIL_USER,
         to: ["yorickspprt@gmail.com", "yorick-972@outlook.com"],
@@ -99,7 +97,6 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         html: emailContent
       });
 
-      // Sauvegarde MongoDB
       await Order.create({
         clientName,
         email,
@@ -192,7 +189,7 @@ app.post('/send-email', async (req, res) => {
   }
 });
 
-// Stripe checkout session
+// 🔥 Route Stripe checkout avec console.log(priceId)
 app.post('/create-checkout-session', async (req, res) => {
   const { items, client } = req.body;
 
@@ -210,6 +207,7 @@ app.post('/create-checkout-session', async (req, res) => {
       const name = item?.name?.trim();
       const priceId = priceMap[name];
       console.log(`➡️ Produit : ${name}, ID Stripe trouvé : ${priceId}`);
+      console.log("💸 Utilisation du priceId :", priceId); // 👈 Ici ton log
 
       if (!priceId) {
         throw new Error(`Produit inconnu : ${item.name}`);
@@ -250,7 +248,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
 
-// Serveur
+// Démarrage serveur
 app.listen(4242, () => {
   console.log(`🚀 Serveur démarré sur http://localhost:4242`);
-});
+})
