@@ -183,27 +183,40 @@ app.post('/send-email', async (req, res) => {
 app.post("/create-checkout-session", async (req, res) => {
   console.log("📦 Reçu dans /create-checkout-session :", JSON.stringify(req.body, null, 2));
 
-  const items = req.body.items;
+  const { items, client } = req.body;
 
-  const lineItems = items.map((item) => {
-    const nomProduit = item.nom?.trim(); // trim pour enlever les espaces éventuels
-    const priceId = priceMap[nomProduit];
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ error: "Items invalides ou vides" });
+  }
 
-    console.log(`🔍 Traitement de l'article :`, item);
-    console.log(`➡️ Produit reçu : "${nomProduit}" — ID Stripe trouvé : ${priceId}`);
-
-    if (!priceId) {
-      console.error(`❌ Produit inconnu : "${nomProduit}". Vérifiez priceMap.`);
-      throw new Error(`Produit inconnu : "${nomProduit}"`);
+  for (const item of items) {
+    if (!item.nom || typeof item.nom !== "string" || item.nom.trim() === "") {
+      return res.status(400).json({ error: "Nom du produit manquant ou invalide dans un item." });
     }
-
-    return {
-      price: priceId,
-      quantity: item.quantite,
-    };
-  });
+  }
 
   try {
+    const lineItems = items.map((item) => {
+      const nomProduit = item.nom.trim();
+      const priceId = priceMap[nomProduit];
+
+      console.log(`🔍 Traitement de l'article :`, item);
+      console.log(`➡️ Produit reçu : "${nomProduit}" — ID Stripe trouvé : ${priceId}`);
+
+      if (!priceId) {
+        throw new Error(`Produit inconnu : "${nomProduit}"`);
+      }
+
+      return {
+        price: priceId,
+        quantity: item.quantite || 1, // fallback à 1 si quantite non précisée
+      };
+    });
+
+    if (!client || !client.email) {
+      return res.status(400).json({ error: "Email client manquant." });
+    }
+
     console.log("📤 Envoi à Stripe avec lineItems :", lineItems);
 
     const session = await stripe.checkout.sessions.create({
@@ -222,12 +235,14 @@ app.post("/create-checkout-session", async (req, res) => {
       }
     });
 
-     res.json({ id: session.id });
+    res.json({ id: session.id });
+
   } catch (error) {
     console.error("❌ Erreur Stripe :", error);
-    res.status(500).json({ error: "Erreur : la session Stripe n'a pas pu être créée." });
+    res.status(500).json({ error: `Erreur lors de la création de session : ${error.message}` });
   }
 });
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
