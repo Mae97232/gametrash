@@ -214,7 +214,7 @@ app.post('/create-checkout-session', async (req, res) => {
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      mode: 'subscription',
+     mode: 'payment',
       line_items: lineItems,
       success_url: 'https://mae97232.github.io/gametrash/index.html?payment=success',
       cancel_url: 'https://mae97232.github.io/gametrash/panier.html',
