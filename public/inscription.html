@@ -21,7 +21,6 @@
     <input type="text" id="adresse" placeholder="Adresse" required>
     <input type="text" id="ville" placeholder="Ville" required>
     <input type="text" id="codePostal" placeholder="Code Postal" required>
-    <input type="date" id="naissance" required>
 
     <button type="submit">S'inscrire</button>
     <div class="message" id="message"></div>
@@ -48,7 +47,6 @@
         adresse: document.getElementById('adresse').value.trim(),
         ville: document.getElementById('ville').value.trim(),
         codePostal: document.getElementById('codePostal').value.trim(),
-        naissance: document.getElementById('naissance').value
       };
 
       const confirmPassword = document.getElementById('confirm-password').value;

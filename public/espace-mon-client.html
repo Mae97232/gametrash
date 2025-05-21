@@ -48,7 +48,6 @@
       <p><strong>Adresse :</strong> <span id="adresse"></span></p>
       <p><strong>Ville :</strong> <span id="ville"></span></p>
       <p><strong>Code postal :</strong> <span id="codePostal"></span></p>
-      <p><strong>Date de naissance :</strong> <span id="naissance"></span></p>
       <button onclick="window.location.href='modifier-profil.html'">✏️ Modifier mon profil</button>
     </section>
     
@@ -78,7 +77,6 @@
       document.getElementById('adresse').textContent = utilisateur.adresse;
       document.getElementById('ville').textContent = utilisateur.ville;
       document.getElementById('codePostal').textContent = utilisateur.codePostal;
-      document.getElementById('naissance').textContent = utilisateur.naissance;
     }
 
     document.getElementById('logout').addEventListener('click', function () {
