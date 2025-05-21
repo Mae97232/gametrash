@@ -189,7 +189,7 @@ app.post('/send-email', async (req, res) => {
   }
 });
 
-// 🔥 Route Stripe checkout avec console.log(priceId)
+// 🔥 Route Stripe checkout avec correction ici
 app.post('/create-checkout-session', async (req, res) => {
   const { items, client } = req.body;
 
@@ -204,18 +204,19 @@ app.post('/create-checkout-session', async (req, res) => {
   try {
     const lineItems = items.map(item => {
       console.log("🔍 Traitement de l'article :", item);
-      const name = item?.name?.trim();
+      const name = item?.nom?.trim();
+      const quantity = item?.quantite;
       const priceId = priceMap[name];
       console.log(`➡️ Produit : ${name}, ID Stripe trouvé : ${priceId}`);
-      console.log("💸 Utilisation du priceId :", priceId); // 👈 Ici ton log
+      console.log("💸 Utilisation du priceId :", priceId);
 
       if (!priceId) {
-        throw new Error(`Produit inconnu : ${item.name}`);
+        throw new Error(`Produit inconnu : ${name}`);
       }
 
       return {
         price: priceId,
-        quantity: item.quantity,
+        quantity: quantity,
       };
     });
 
