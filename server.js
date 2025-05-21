@@ -192,6 +192,7 @@ app.post('/send-email', async (req, res) => {
 // 🔥 Route Stripe checkout avec correction ici
 app.post('/create-checkout-session', async (req, res) => {
   const { items, client } = req.body;
+   console.log("📦 items reçus :", items);
 
   console.log("📦 Reçu dans /create-checkout-session :");
   console.log(JSON.stringify(req.body, null, 2));
@@ -202,23 +203,22 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 
   try {
-    const lineItems = items.map(item => {
-      console.log("🔍 Traitement de l'article :", item);
-      const name = item?.nom?.trim();
-      const quantity = item?.quantite;
-      const priceId = priceMap[name];
-      console.log(`➡️ Produit : ${name}, ID Stripe trouvé : ${priceId}`);
-      console.log("💸 Utilisation du priceId :", priceId);
+   const lineItems = items.map(item => {
+  console.log("🔍 Traitement de l'article :", item);
+  const name = item?.nom?.trim();  // <== modifié ici
+  const priceId = priceMap[name];
+  console.log(`➡️ Produit : ${name}, ID Stripe trouvé : ${priceId}`);
+  console.log("💸 Utilisation du priceId :", priceId);
 
-      if (!priceId) {
-        throw new Error(`Produit inconnu : ${name}`);
-      }
+  if (!priceId) {
+    throw new Error(`Produit inconnu : ${name}`);
+  }
 
-      return {
-        price: priceId,
-        quantity: quantity,
-      };
-    });
+  return {
+    price: priceId,
+    quantity: item.quantite,
+  };
+});
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
