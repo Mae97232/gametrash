@@ -380,7 +380,6 @@ h2 { font-size: 28px; }
   width: 100%;
   max-width: 400px; /* Ajuste selon ton design */
   height: 300px;     /* Ajuste la hauteur comme tu veux */
-  background-image: url('../images/game2.png'); /* Chemin de ton image */
   background-size: cover;
   background-position: center;
   border-radius: 15px; /* Optionnel : pour des bords arrondis */

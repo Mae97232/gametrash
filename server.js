@@ -23,10 +23,10 @@ const Order = require('./models/order');
 
 // Mapping produit -> priceId Stripe
 const priceMap = {
-  "GameBoy Rouge": "price_1RQAblEL9cznbBHR0WpmsM29",
-  "GameBoy Noir": "price_1RQ3DMEL9cznbBHRUyJq2IUa",
-  "GameBoy Orange": "price_1RQAceEL9cznbBHRdKfSlNeP",
-  "GameBoy Violet": "price_1RQAdbEL9cznbBHRo9v8Iz7N"
+  "GameBoy Rouge": "price_1RREZoEL9cznbBHRbrCeYpXR",
+  "GameBoy Noir": "price_1RREcyEL9cznbBHRXZiSdGCE",
+  "GameBoy Orange":  "price_1RREOuEL9cznbBHRrlyihpV4",
+  "GameBoy Violet":  "price_1RREWjEL9cznbBHRICFULwO5",
 };
 
 // Webhook Stripe
