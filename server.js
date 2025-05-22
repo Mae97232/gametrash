@@ -20,19 +20,29 @@ mongoose.connect(process.env.MONGO_URI)
 const Order = require('./models/order');
 const User = require('./models/user');
 
-// ✅ PriceMap à jour
+// Map des produits avec leurs priceId Stripe
 const priceMap = {
   "gameboy r36s rouge": "price_1RREZoEL9cznbBHRbrCeYpXR",
   "gameboy r36s noir": "price_1RREcyEL9cznbBHRXZiSdGCE",
   "gameboy r36s orange": "price_1RREOuEL9cznbBHRrlyihpV4",
   "gameboy r36s violet": "price_1RREWjEL9cznbBHRICFULwO5",
+  "gameboy orange": "price_1RREOuEL9cznbBHRrlyihpV4", // variante utile
 };
+
+// Fonction pour normaliser le nom du produit
+function normalizeProductName(name) {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s]/g, '')  // supprime ponctuation/caractères spéciaux
+    .replace(/\s+/g, ' ');        // remplace plusieurs espaces par un seul
+}
 
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ✅ Webhook Stripe
+// Webhook Stripe
 app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;
@@ -120,7 +130,7 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
   res.json({ received: true });
 });
 
-// ✅ Création de session Stripe sécurisée
+// Création de session Stripe sécurisée
 app.post("/create-checkout-session", async (req, res) => {
   console.log("📥 Reçu POST /create-checkout-session");
   console.log("🔍 Contenu de la requête :", JSON.stringify(req.body, null, 2));
@@ -141,11 +151,13 @@ app.post("/create-checkout-session", async (req, res) => {
         throw new Error(`Item incomplet à l'index ${index}`);
       }
 
-      const nomProduit = item.nom.trim().toLowerCase();
-      const priceId = priceMap[nomProduit];
+      const normalizedNom = normalizeProductName(item.nom);
+      console.log(`Nom normalisé: "${normalizedNom}"`);
+
+      const priceId = priceMap[normalizedNom];
 
       if (!priceId) {
-        throw new Error(`Produit inconnu : "${nomProduit}"`);
+        throw new Error(`Produit inconnu ou non référencé : "${item.nom}" (normalisé: "${normalizedNom}")`);
       }
 
       return {
@@ -165,16 +177,16 @@ app.post("/create-checkout-session", async (req, res) => {
       billing_address_collection: 'required',
       phone_number_collection: { enabled: true },
     });
-    
- console.log("✅ Session créée :", session.id); // ← important
+
+    console.log("✅ Session créée :", session.id);
     res.json({ id: session.id });
- } catch (err) {
-  console.error("❌ Erreur Stripe :", err); // <-- CE LOG EST ESSENTIEL
-  res.status(500).json({ error: err.message });  
-}
+  } catch (err) {
+    console.error("❌ Erreur Stripe :", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// ✅ Auth
+// Authentification
 app.post('/register', async (req, res) => {
   try {
     const existing = await User.findOne({ email: req.body.email });
@@ -207,7 +219,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// ✅ Envoi d'email manuel
+// Envoi d'email manuel
 app.post('/send-email', async (req, res) => {
   const { to, subject, html } = req.body;
 
