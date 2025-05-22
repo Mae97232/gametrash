@@ -223,9 +223,8 @@
 
     localStorage.setItem("commandeClient", JSON.stringify(infosClient));
 
-    // ✅ Ici : normalisation des noms pour correspondre au backend
     const items = panier.map(item => ({
-      nom: item.nom.trim().toLowerCase(), // 🔧 correction clé
+      nom: item.nom.trim().toLowerCase(),
       quantite: item.quantite,
       prix: item.prix
     }));
@@ -246,6 +245,8 @@
       });
       const data = await response.json();
       if (data.url) {
+        // Redirection vers Stripe Checkout avec la clé publique Stripe
+        const stripe = Stripe('pk_live_51RJzUhEL9cznbBHRcqGp16iQhro9hABbLNiz4J6msWG2MgrUAYgUZXuP0IduvyaJzWKuEj5E8zx5T8XLCUNirbBW00CAhhAcD0');
         window.location.href = data.url;
       } else {
         alert("Erreur : la session Stripe n'a pas pu être créée.");
