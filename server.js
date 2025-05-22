@@ -19,11 +19,12 @@ mongoose.connect(process.env.MONGO_URI)
 
 const Order = require('./models/order');
 
+// ✅ PriceMap corrigé avec les bons noms depuis Stripe
 const priceMap = {
-  "GameBoy Rouge": "price_1RREZoEL9cznbBHRbrCeYpXR",
-  "GameBoy Noir": "price_1RREcyEL9cznbBHRXZiSdGCE",
-  "GameBoy Orange": "price_1RREOuEL9cznbBHRrlyihpV4",
-  "GameBoy Violet": "price_1RREWjEL9cznbBHRICFULwO5",
+  "gameboy r36s rouge": "price_1RREZoEL9cznbBHRbrCeYpXR",
+  "gameboy r36s noir": "price_1RREcyEL9cznbBHRXZiSdGCE",
+  "gameboy r36s orange": "price_1RREOuEL9cznbBHRrlyihpV4",
+  "gameboy r36s violet": "price_1RREWjEL9cznbBHRICFULwO5",
 };
 
 app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
@@ -198,14 +199,15 @@ app.post("/create-checkout-session", async (req, res) => {
     }
 
     const lineItems = items.map((item, index) => {
-      const nomProduit = item.nom?.trim();
+      const nomProduit = item.nom?.trim().toLowerCase(); // 🔽 important
       const priceId = priceMap[nomProduit];
 
       console.log(`🔍 Article [${index}]:`, item);
       console.log(`🧩 Produit reçu : "${nomProduit}" — ID Stripe : ${priceId}`);
 
       if (!priceId) {
-        console.error(`❌ Produit inconnu dans priceMap : "${nomProduit}"`);
+        console.error(`❌ Produit inconnu : "${nomProduit}"`);
+        console.error("📦 Liste des produits connus :", Object.keys(priceMap));
         throw new Error(`Produit inconnu : "${nomProduit}"`);
       }
 
@@ -237,16 +239,16 @@ app.post("/create-checkout-session", async (req, res) => {
     res.json({ id: session.id });
 
   } catch (error) {
-    console.error("❌ Erreur dans /create-checkout-session :", error);
+    console.error("❌ Erreur dans /create-checkout-session :", error.message);
     res.status(500).json({ error: "Erreur : la session Stripe n'a pas pu être créée." });
   }
-})
+});
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
 
 // Démarrage serveur
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Serveur démarré sur port ${PORT}`);
-});
+app.listen(4242, () => {
+  console.log(`🚀 Serveur démarré sur http://localhost:4242`);
+})
