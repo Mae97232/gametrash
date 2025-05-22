@@ -223,13 +223,13 @@
 
     localStorage.setItem("commandeClient", JSON.stringify(infosClient));
 
+    // ✅ Ici : normalisation des noms pour correspondre au backend
     const items = panier.map(item => ({
-      nom: item.nom,
+      nom: item.nom.trim().toLowerCase(), // 🔧 correction clé
       quantite: item.quantite,
       prix: item.prix
     }));
 
-    // Sauvegarder la commande dans l'historique local
     let historique = JSON.parse(localStorage.getItem("historiqueCommandes")) || [];
     historique.push({
       date: new Date().toLocaleString(),
@@ -260,7 +260,6 @@
     afficherPanier();
     mettreAJourCompteurPanier();
 
-    // ✅ Vider le panier si le paiement a réussi
     if (window.location.search.includes("success=true")) {
       localStorage.removeItem("panier");
       const compteur = document.getElementById("panierCount");
