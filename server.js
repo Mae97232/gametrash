@@ -7,8 +7,6 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const bodyParser = require('body-parser');
 require('dotenv').config();
-console.log("🔑 STRIPE_SECRET_KEY =", process.env.STRIPE_SECRET_KEY?.slice(0,10) + "...");
-
 
 const app = express();
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
@@ -20,8 +18,9 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.error('❌ Erreur de connexion MongoDB :', err));
 
 const Order = require('./models/order');
+const User = require('./models/user');
 
-// ✅ PriceMap corrigé avec les bons noms depuis Stripe
+// ✅ PriceMap à jour
 const priceMap = {
   "gameboy r36s rouge": "price_1RREZoEL9cznbBHRbrCeYpXR",
   "gameboy r36s noir": "price_1RREcyEL9cznbBHRXZiSdGCE",
@@ -29,6 +28,11 @@ const priceMap = {
   "gameboy r36s violet": "price_1RREWjEL9cznbBHRICFULwO5",
 };
 
+app.use(cors());
+app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'public')));
+
+// ✅ Webhook Stripe
 app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;
@@ -37,7 +41,7 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
     event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
     console.log('✔️ Signature vérifiée :', event.type);
   } catch (err) {
-    console.error('❌ Erreur de vérification de signature Webhook :', err.message);
+    console.error('❌ Erreur de vérification Webhook :', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
@@ -59,7 +63,7 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
 
       const emailContent = `
         <div style="font-family: Arial, sans-serif; color: #333;">
-          <h2 style="color: #4CAF50;">🎮 Nouvelle commande GameTrash</h2>
+          <h2>🎮 Nouvelle commande GameTrash</h2>
           <p><strong>Nom :</strong> ${clientName}</p>
           <p><strong>Email :</strong> ${email}</p>
           <p><strong>Téléphone :</strong> ${telephone}</p>
@@ -67,10 +71,9 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
           <h3>Détails de la commande :</h3>
           <ul>
             ${lineItems.data.map(item => `
-              <li>${item.quantity} × <strong>${item.description}</strong> — ${(item.price.unit_amount / 100).toFixed(2)} €</li>
+              <li>${item.quantity} × ${item.description} — ${(item.price.unit_amount / 100).toFixed(2)} €</li>
             `).join('')}
           </ul>
-          <p style="margin-top: 20px;">Merci pour votre commande !</p>
         </div>
       `;
 
@@ -108,23 +111,70 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
         }))
       });
 
-      console.log('✅ Emails envoyés & commande enregistrée');
+      console.log('✅ Commande enregistrée et emails envoyés');
     } catch (err) {
-      console.error('❌ Erreur lors du traitement de la commande :', err);
+      console.error('❌ Erreur traitement commande :', err);
     }
-  } else {
-    console.log(`ℹ️ Événement ignoré : ${event.type}`);
   }
 
   res.json({ received: true });
 });
 
-app.use(cors());
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'public')));
+// ✅ Création de session Stripe sécurisée
+app.post("/create-checkout-session", async (req, res) => {
+  console.log("📥 Reçu POST /create-checkout-session");
+  console.log("🔍 Contenu de la requête :", JSON.stringify(req.body, null, 2));
 
-const User = require('./models/user');
+  try {
+    const { items, client } = req.body;
 
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: "'items' est requis et ne peut pas être vide." });
+    }
+
+    if (!client || !client.email) {
+      return res.status(400).json({ error: "'client.email' est requis." });
+    }
+
+    const lineItems = items.map((item, index) => {
+      if (!item.nom || !item.quantite) {
+        throw new Error(`Item incomplet à l'index ${index}`);
+      }
+
+      const nomProduit = item.nom.trim().toLowerCase();
+      const priceId = priceMap[nomProduit];
+
+      if (!priceId) {
+        throw new Error(`Produit inconnu : "${nomProduit}"`);
+      }
+
+      return {
+        price: priceId,
+        quantity: item.quantite,
+      };
+    });
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'payment',
+      line_items: lineItems,
+      success_url: 'https://mae97232.github.io/gametrash/index.html?payment=success',
+      cancel_url: 'https://mae97232.github.io/gametrash/panier.html',
+      customer_email: client.email,
+      shipping_address_collection: { allowed_countries: ['FR'] },
+      billing_address_collection: 'required',
+      phone_number_collection: { enabled: true },
+    });
+    
+ console.log("✅ Session créée :", session.id); // ← important
+    res.json({ id: session.id });
+ } catch (err) {
+  console.error("❌ Erreur Stripe :", err); // <-- CE LOG EST ESSENTIEL
+  res.status(500).json({ error: 'Erreur lors de la création de la session Stripe.' });
+}
+});
+
+// ✅ Auth
 app.post('/register', async (req, res) => {
   try {
     const existing = await User.findOne({ email: req.body.email });
@@ -142,7 +192,6 @@ app.post('/register', async (req, res) => {
 
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
-
   try {
     const user = await User.findOne({ email });
     if (!user) return res.status(401).json({ error: "Email ou mot de passe incorrect." });
@@ -150,14 +199,15 @@ app.post('/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ error: "Email ou mot de passe incorrect." });
 
-    const { password: _, ...userSansMotDePasse } = user.toObject();
-    res.status(200).json(userSansMotDePasse);
+    const { password: _, ...userData } = user.toObject();
+    res.status(200).json(userData);
   } catch (err) {
-    console.error("❌ Erreur lors de la connexion :", err);
+    console.error("❌ Erreur login :", err);
     res.status(500).json({ error: "Erreur serveur." });
   }
 });
 
+// ✅ Envoi d'email manuel
 app.post('/send-email', async (req, res) => {
   const { to, subject, html } = req.body;
 
@@ -178,71 +228,8 @@ app.post('/send-email', async (req, res) => {
     });
     res.status(200).json({ message: 'Email envoyé avec succès.' });
   } catch (error) {
-    console.error('Erreur d\'envoi :', error);
+    console.error('❌ Erreur d\'envoi email :', error);
     res.status(500).json({ error: `Erreur lors de l'envoi de l'email : ${error.message}` });
-  }
-});
-
-app.post("/create-checkout-session", async (req, res) => {
-  console.log("📥 Nouvelle requête POST /create-checkout-session reçue");
-  console.log("🧾 Données reçues :", JSON.stringify(req.body, null, 2));
-
-  try {
-    const { items, client } = req.body;
-
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      console.error("❌ Erreur : 'items' manquant ou vide");
-      return res.status(400).json({ error: "'items' est requis et ne peut pas être vide." });
-    }
-
-    if (!client || !client.email) {
-      console.error("❌ Erreur : 'client.email' est requis");
-      return res.status(400).json({ error: "'client.email' est requis." });
-    }
-
-    const lineItems = items.map((item, index) => {
-      const nomProduit = item.nom?.trim().toLowerCase(); // 🔽 important
-      const priceId = priceMap[nomProduit];
-
-      console.log(`🔍 Article [${index}]:`, item);
-      console.log(`🧩 Produit reçu : "${nomProduit}" — ID Stripe : ${priceId}`);
-
-      if (!priceId) {
-        console.error(`❌ Produit inconnu : "${nomProduit}"`);
-        console.error("📦 Liste des produits connus :", Object.keys(priceMap));
-        throw new Error(`Produit inconnu : "${nomProduit}"`);
-      }
-
-      return {
-        price: priceId,
-        quantity: item.quantite,
-      };
-    });
-
-    console.log("✅ line_items préparés :", lineItems);
-
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'payment',
-      line_items: lineItems,
-      success_url: 'https://mae97232.github.io/gametrash/index.html?payment=success',
-      cancel_url: 'https://mae97232.github.io/gametrash/panier.html',
-      customer_email: client.email,
-      shipping_address_collection: {
-        allowed_countries: ['FR']
-      },
-      billing_address_collection: 'required',
-      phone_number_collection: {
-        enabled: true
-      }
-    });
-
-    console.log("✅ Session Stripe créée avec succès :", session.id);
-    res.json({ id: session.id });
-
-  } catch (error) {
-    console.error("❌ Erreur dans /create-checkout-session :", error.message);
-    res.status(500).json({ error: "Erreur : la session Stripe n'a pas pu être créée." });
   }
 });
 

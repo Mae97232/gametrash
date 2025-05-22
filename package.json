@@ -15,6 +15,18 @@
         "express": "^4.21.2",
         "mongoose": "^8.14.1",
         "nodemailer": "^6.10.1",
-        "stripe": "^18.1.0"
-    }
+        "stripe": "^18.1.1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/Mae97232/gametrash.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "commonjs",
+    "bugs": {
+        "url": "https://github.com/Mae97232/gametrash/issues"
+    },
+    "homepage": "https://github.com/Mae97232/gametrash#readme"
 }
