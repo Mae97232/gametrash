@@ -7,6 +7,8 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const bodyParser = require('body-parser');
 require('dotenv').config();
+console.log("🔑 STRIPE_SECRET_KEY =", process.env.STRIPE_SECRET_KEY?.slice(0,10) + "...");
+
 
 const app = express();
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
