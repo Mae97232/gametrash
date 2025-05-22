@@ -223,10 +223,10 @@
 
     localStorage.setItem("commandeClient", JSON.stringify(infosClient));
 
+    // IMPORTANT : supprimer le champ prix dans les items envoyés !
     const items = panier.map(item => ({
       nom: item.nom.trim().toLowerCase(),
-      quantite: item.quantite,
-      prix: item.prix
+      quantite: item.quantite
     }));
 
     let historique = JSON.parse(localStorage.getItem("historiqueCommandes")) || [];
@@ -260,13 +260,8 @@
   document.addEventListener("DOMContentLoaded", function () {
     afficherPanier();
     mettreAJourCompteurPanier();
-
-    if (window.location.search.includes("success=true")) {
-      localStorage.removeItem("panier");
-      const compteur = document.getElementById("panierCount");
-      if (compteur) compteur.textContent = "(0)";
-    }
   });
 </script>
+
 </body>
 </html>
