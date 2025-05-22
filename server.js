@@ -22,11 +22,10 @@ const User = require('./models/user');
 
 // Map des produits avec leurs priceId Stripe
 const priceMap = {
-  "gameboy r36s rouge": "price_1RREZoEL9cznbBHRbrCeYpXR",
+  "gameboy r36s rouge": "price_1RREZoEL9cznbBHRbrCeYpXR", // ✅ le bon
   "gameboy r36s noir": "price_1RREcyEL9cznbBHRXZiSdGCE",
   "gameboy r36s orange": "price_1RREOuEL9cznbBHRrlyihpV4",
-  "gameboy r36s violet": "price_1RREWjEL9cznbBHRICFULwO5",
-  "gameboy orange": "price_1RREOuEL9cznbBHRrlyihpV4", // variante utile
+  "gameboy r36s violet": "price_1RREWjEL9cznbBHRICFULwO5"
 };
 
 // Fonction pour normaliser le nom du produit
