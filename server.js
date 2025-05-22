@@ -170,7 +170,7 @@ app.post("/create-checkout-session", async (req, res) => {
     res.json({ id: session.id });
  } catch (err) {
   console.error("❌ Erreur Stripe :", err); // <-- CE LOG EST ESSENTIEL
-  res.status(500).json({ error: 'Erreur lors de la création de la session Stripe.' });
+  res.status(500).json({ error: err.message });  
 }
 });
 
