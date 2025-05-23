@@ -22,20 +22,12 @@ mongoose.connect(process.env.MONGO_URI)
 const Order = require('./models/order');
 const User = require('./models/user');
 
-// ✅ Correspondance noms produits frontend ↔ Stripe Price ID
-const priceMapping = {
-    "GameBoy Noir": "price_1RRwL9EL9cznbBHRPenR3doJ",
-  "Gameboy Rouge": "price_1RRwNnEL9cznbBHR963CrH9s",
-  "GameBoy Orange": "price_1RRwP1EL9cznbBHR1cAr0edk",
-  "GameBoy Violet": "price_1RRwPXEL9cznbBHR3d6OW2r3"
-  };
-
 // Middlewares
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// ✅ Webhook Stripe
+// Webhook Stripe
 app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;
@@ -123,44 +115,38 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
   res.json({ received: true });
 });
 
-// ✅ Route de création de session Stripe
+// Route création session Stripe sans Price IDs fixes
 app.post("/create-checkout-session", async (req, res) => {
   console.log("📥 Reçu POST /create-checkout-session");
   console.log("🔍 Contenu de la requête :", JSON.stringify(req.body, null, 2));
 
   try {
-    const { items, client } = req.body;
-
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ error: "'items' est requis et ne peut pas être vide." });
-    }
+    const { client, amount } = req.body;
 
     if (!client || !client.email) {
       return res.status(400).json({ error: "'client.email' est requis." });
     }
 
-    const lineItems = items.map((item, index) => {
-      if (!item.nom || !item.quantite) {
-        throw new Error(`Item incomplet à l'index ${index}`);
-      }
+    if (!amount || typeof amount !== 'number' || amount <= 0) {
+      return res.status(400).json({ error: "'amount' doit être un nombre positif." });
+    }
 
-      const nomProduit = item.nom.trim(); // plus de .toLowerCase()
-      const priceId = priceMap[nomProduit];
-
-      if (!priceId) {
-        throw new Error(`Produit inconnu ou désactivé : "${nomProduit}"`);
-      }
-
-      return {
-        price: priceId,
-        quantity: item.quantite,
-      };
-    });
-
+    // Création d'une session Stripe avec un produit "virtuel" et montant dynamique
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
-      line_items: lineItems,
+      line_items: [
+        {
+          price_data: {
+            currency: 'eur',
+            product_data: {
+              name: 'Paiement GameTrash',
+            },
+            unit_amount: Math.round(amount * 100), // montant en centimes
+          },
+          quantity: 1,
+        }
+      ],
       success_url: 'https://mae97232.github.io/gametrash/index.html?payment=success',
       cancel_url: 'https://mae97232.github.io/gametrash/panier.html',
       customer_email: client.email,
@@ -170,14 +156,14 @@ app.post("/create-checkout-session", async (req, res) => {
     });
 
     console.log("✅ Session Stripe créée :", session.id);
-    res.json({ id: session.id });
+    res.json({ url: session.url });
   } catch (err) {
     console.error("❌ Erreur Stripe :", err);
     res.status(500).json({ error: err.message });
   }
 });
 
-// ✅ Authentification utilisateur
+// Authentification utilisateur
 app.post('/register', async (req, res) => {
   try {
     const existing = await User.findOne({ email: req.body.email });
@@ -210,7 +196,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// ✅ Envoi d'email manuel
+// Envoi d'email manuel
 app.post('/send-email', async (req, res) => {
   const { to, subject, html } = req.body;
 
@@ -240,6 +226,7 @@ app.post('/send-email', async (req, res) => {
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
+
 
 // ✅ Lancement serveur
 app.listen(4242, () => {
