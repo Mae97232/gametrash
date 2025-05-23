@@ -48,7 +48,6 @@
       <p><strong>Adresse :</strong> <span id="adresse"></span></p>
       <p><strong>Ville :</strong> <span id="ville"></span></p>
       <p><strong>Code postal :</strong> <span id="codePostal"></span></p>
-      <p><strong>Date de naissance :</strong> <span id="naissance"></span></p>
       <button onclick="window.location.href='modifier-profil.html'">✏️ Modifier mon profil</button>
     </section>
     
@@ -78,13 +77,38 @@
       document.getElementById('adresse').textContent = utilisateur.adresse;
       document.getElementById('ville').textContent = utilisateur.ville;
       document.getElementById('codePostal').textContent = utilisateur.codePostal;
-      document.getElementById('naissance').textContent = utilisateur.naissance;
     }
 
     document.getElementById('logout').addEventListener('click', function () {
       localStorage.removeItem('utilisateurConnecte');
       window.location.href = 'connexion.html';
     });
+
+    // ✅ Afficher l'historique des commandes
+const commandesContainer = document.getElementById('historiqueCommandes');
+const historique = JSON.parse(localStorage.getItem("historiqueCommandes")) || [];
+
+if (historique.length === 0) {
+  commandesContainer.innerHTML = "<p>Aucune commande passée.</p>";
+} else {
+  historique
+    .filter(cmd => cmd.client.email === utilisateur.email)
+    .reverse()
+    .forEach((commande, index) => {
+      const bloc = document.createElement("div");
+      bloc.classList.add("commande");
+      bloc.innerHTML = `
+        <h3>Commande #${historique.length - index} - ${commande.date}</h3>
+        <ul>
+          ${commande.produits
+            .map(p => `<li>${p.quantite} × ${p.nom} - ${p.prix}€</li>`)
+            .join("")}
+        </ul>
+        <hr />
+      `;
+      commandesContainer.appendChild(bloc);
+    });
+}
   </script>
 </body>
 </html>

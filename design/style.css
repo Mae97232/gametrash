@@ -377,10 +377,13 @@ h2 { font-size: 28px; }
 }
 
 .image-apropos {
-  flex: 1;
-  min-width: 280px;
-  max-width: 500px;
-  text-align: center;
+  width: 100%;
+  max-width: 400px; /* Ajuste selon ton design */
+  height: 300px;     /* Ajuste la hauteur comme tu veux */
+  background-size: cover;
+  background-position: center;
+  border-radius: 15px; /* Optionnel : pour des bords arrondis */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Optionnel : pour un effet ombré */
 }
 
 .image-apropos img {
@@ -1796,90 +1799,36 @@ body {
    background-color: #000; /* optionnel : pour éviter la transparence */
 }
 
-body {
-  background-color: #111;
-  color: #fff;
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-}
-
-header {
-  background-color: #000;
-  padding: 10px;
-  text-align: center;
-}
-
-.apropos-accueil {
-  padding: 40px 20px;
-}
-
-.conteneur-apropos {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 40px;
-}
-
 .video-background {
   position: relative;
-  max-width: 500px;
-  flex: 1 1 300px;
+  width: 100%;
+  max-width: 480px;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 20px;
 }
 
 .video-background video {
   width: 100%;
   height: auto;
-  border-radius: 10px;
+  display: block;
+  object-fit: cover;
+  border-radius: 20px;
 }
 
+/* Bouton mute sans fond ni ombre */
 #soundButton {
   position: absolute;
-  bottom: 10px;
-  right: 10px;
-  background-color: rgba(0, 0, 0, 0.6);
-  color: white;
+  bottom: 8px;
+  right: 8px;
+  background: transparent; /* plus aucun fond */
   border: none;
-  border-radius: 5px;
-  padding: 5px 10px;
+  box-shadow: none;        /* plus d’ombre */
+  color: white;
+  font-size: 18px;
+  padding: 2px;
+  border-radius: 4px;
   cursor: pointer;
-  box-shadow: none; /* ✅ Pas d’ombre */
+  z-index: 2;
 }
 
-.texte-apropos {
-  flex: 1 1 300px;
-  max-width: 500px;
-}
-
-.texte-apropos h2 {
-  font-size: 2em;
-  color: cyan;
-}
-
-.texte-apropos p {
-  font-size: 1.1em;
-  line-height: 1.6;
-}
-
-.highlight {
-  color: cyan;
-}
-
-.btn {
-  display: inline-block;
-  margin-top: 10px;
-  padding: 10px 20px;
-  background-color: cyan;
-  color: #000;
-  text-decoration: none;
-  font-weight: bold;
-  border-radius: 5px;
-}
-
-.image-apropos {
-  display: block;
-  margin: 30px auto 0;
-  max-width: 150px;
-  height: auto;
-}

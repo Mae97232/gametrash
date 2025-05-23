@@ -14,7 +14,6 @@
   <form id="formModifierProfil" style="max-width: 600px; margin: auto;">
     <input type="text" id="nom" placeholder="Nom" required />
     <input type="text" id="prénom" placeholder="Prénom" required />
-    <input type="date" id="dateNaissance" required />
     <input type="text" id="adresse" placeholder="Adresse" required />
     <input type="text" id="codepostal" placeholder="Code postal" required />
     <input type="text" id="ville" placeholder="Ville" required />
@@ -34,7 +33,6 @@
     } else {
       document.getElementById("nom").value = utilisateur.nom || "";
       document.getElementById("prénom").value = utilisateur.prénom || "";
-      document.getElementById("dateNaissance").value = utilisateur.dateNaissance || "";
       document.getElementById("adresse").value = utilisateur.adresse || "";
       document.getElementById("codepostal").value = utilisateur.codePostal || "";
       document.getElementById("ville").value = utilisateur.ville || "";

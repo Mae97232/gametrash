@@ -13,7 +13,7 @@
    <!-- ✅ NAVBAR -->
    <nav class="navbar">
       <a href="index.html" class="logo-texte">
-         <img src="images/game2.png" alt="Logo Game Trash" class="logo-header" />
+         <img src="/images/game2.png" alt="Logo Game Trash" class="logo-header" />
          <div class="texte-header">
             <h1>Game Trash</h1>
             <span class="slogan">L'expert des GameBoy – La nostalgie au creux de vos mains</span>
@@ -40,7 +40,7 @@
       <div class="conteneur">
          <header class="top-header">
             <div class="logo-texte">
-               <img src="images/game2.png" alt="Logo Game Trash" class="logo-header" />
+               <img src="/images/game2.png" alt="Logo Game Trash" class="logo-header" />
                <div class="texte-header">
                   <h1>Game Trash</h1>
                   <span class="slogan">L'expert des GameBoy – La nostalgie au creux de vos mains</span>
@@ -58,22 +58,22 @@
 
       <section id="Flexbox-game">
          <div class="product-card noir">
-            <img src="images/Gameboy-black.jpg" alt="GameBoy Noire" />
+            <img src="/images/Gameboy-black.jpg" alt="GameBoy Noire" />
             <h3>GameBoy Noire</h3>
             <a href="produit.html" class="btn">Voir le produit</a>
          </div>
          <div class="product-card rouge">
-            <img src="images/Gameboy-red.webp?v=1" alt="GameBoy Rouge" />
+            <img src="/images/Gameboy-red.png" alt="GameBoy Rouge" />
             <h3>GameBoy Rouge</h3>
             <a href="produit2.html" class="btn">Voir le produit</a>
          </div>
          <div class="product-card orange">
-            <img src="images/Gameboy-orange.jpg" alt="GameBoy Orange" />
+            <img src="/images/Gameboy-orange.jpg" alt="GameBoy Orange" />
             <h3>GameBoy Orange</h3>
             <a href="produit3.html" class="btn">Voir le produit</a>
          </div>
          <div class="product-card violet">
-            <img src="images/Gameboy-purple.webp" alt="GameBoy Violet" />
+            <img src="/images/Gameboy-purple.webp" alt="GameBoy Violet" />
             <h3>GameBoy Violet</h3>
             <a href="produit4.html" class="btn">Voir le produit</a>
          </div>
@@ -84,12 +84,12 @@
             
             <!-- ✅ VIDEO À GAUCHE -->
             <div class="video-background">
-               <video id="bgVideo" autoplay loop playsinline muted>
-                  <source src="vidéos/Gameboy R36S video.mp4" type="video/mp4">
-                  Votre navigateur ne supporte pas la vidéo.
-               </video>
-               <button id="soundToggle">🔊</button>
-            </div>
+  <video id="myVideo" autoplay muted loop>
+    <source src="vidéos/Gameboy R36S video.mp4" type="video/mp4">
+    Votre navigateur ne supporte pas la vidéo HTML5.
+  </video>
+  <button id="soundButton">🔇</button>
+</div>
 
             <!-- ✅ TEXTE À DROITE -->
             <div class="texte-apropos">
@@ -103,7 +103,7 @@
                   Rejoignez la communauté des vrais gamers rétro.
                </p>
                <a href="a-propos.html" class="btn">En savoir plus</a>
-                <img src="images/game2.png" alt="Dessin GameBoy" class="image-apropos" />
+                <img src="/images/game2.png" alt="Dessin GameBoy" class="image-apropos" />
             </div>
 
       
@@ -186,15 +186,13 @@
 
    <!-- ✅ Bouton mute/son -->
    <script>
-      const bgVideo = document.getElementById("bgVideo");
-      const soundToggle = document.getElementById("soundToggle");
+  const video = document.getElementById('myVideo');
+  const soundButton = document.getElementById('soundButton');
 
-      bgVideo.muted = true;
-
-      soundToggle.addEventListener("click", () => {
-         bgVideo.muted = !bgVideo.muted;
-         soundToggle.textContent = bgVideo.muted ? "🔊" : "🔇";
-      });
-   </script>
+  soundButton.addEventListener('click', () => {
+    video.muted = !video.muted;
+    soundButton.textContent = video.muted ? '🔇' : '🔊';
+  });
+</script>
 </body>
 </html>
