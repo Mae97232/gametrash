@@ -223,9 +223,9 @@
 
     localStorage.setItem("commandeClient", JSON.stringify(infosClient));
 
-    // IMPORTANT : supprimer le champ prix dans les items envoyés !
+    // IMPORTANT : garder le nom avec sa casse exacte (sans toLowerCase)
     const items = panier.map(item => ({
-      nom: item.nom.trim().toLowerCase(),
+      nom: item.nom.trim(),  // <-- ici, plus de toLowerCase()
       quantite: item.quantite
     }));
 
