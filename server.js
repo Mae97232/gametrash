@@ -24,10 +24,10 @@ const User = require('./models/user');
 
 // ✅ PriceMap avec uniquement les produits actifs
 const priceMap = {
-  "gameboy r36s rouge": "price_1RREZoEL9cznbBHRbrCeYpXR",
-  "gameboy r36s noir": "price_1RREcyEL9cznbBHRXZiSdGCE",
-  "gameboy r36s orange": "price_1RREOuEL9cznbBHRrlyihpV4",
-  "gameboy r36s violet": "price_1RREWjEL9cznbBHRICFULwO5"
+  "gameboy rouge": "price_1RREZoEL9cznbBHRbrCeYpXR",
+  "gameboy noir": "price_1RREcyEL9cznbBHRXZiSdGCE",
+  "gameboy orange": "price_1RREOuEL9cznbBHRrlyihpV4",
+  "gameboy violet": "price_1RREWjEL9cznbBHRICFULwO5"
 };
 
 // Middlewares
