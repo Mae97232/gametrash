@@ -24,10 +24,10 @@ const User = require('./models/user');
 
 // ✅ Correspondance noms produits frontend ↔ Stripe Price ID
 const priceMapping = {
-    "gameboy noir": "price_1RRwL9EL9cznbBHRPenR3doJ",
-    "gameboy rouge": "price_1RRwNnEL9cznbBHR963CrH9s",
-    "gameboy orange": "price_1RRwP1EL9cznbBHR1cAr0edk",
-    "gameboy violet": "price_1RRwPXEL9cznbBHR3d6OW2r3"
+    "GameBoy Noir": "price_1RRwL9EL9cznbBHRPenR3doJ",
+  "Gameboy Rouge": "price_1RRwNnEL9cznbBHR963CrH9s",
+  "GameBoy Orange": "price_1RRwP1EL9cznbBHR1cAr0edk",
+  "GameBoy Violet": "price_1RRwPXEL9cznbBHR3d6OW2r3"
   };
 
 // Middlewares
