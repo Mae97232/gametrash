@@ -115,38 +115,33 @@ app.post('/webhook-stripe', bodyParser.raw({ type: 'application/json' }), async 
   res.json({ received: true });
 });
 
-// Route création session Stripe sans Price IDs fixes
+// Création session Stripe avec panier dynamique
 app.post("/create-checkout-session", async (req, res) => {
   console.log("📥 Reçu POST /create-checkout-session");
   console.log("🔍 Contenu de la requête :", JSON.stringify(req.body, null, 2));
 
+  const { client, items } = req.body;
+
+  if (!client?.email || !Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ error: "Le champ 'client.email' et une liste 'items' sont requis." });
+  }
+
   try {
-    const { client, amount } = req.body;
+    const line_items = items.map(item => ({
+      price_data: {
+        currency: 'eur',
+        product_data: {
+          name: item.nom || 'Produit sans nom',
+        },
+        unit_amount: Math.round(item.prix * 100),
+      },
+      quantity: item.quantite || 1,
+    }));
 
-    if (!client || !client.email) {
-      return res.status(400).json({ error: "'client.email' est requis." });
-    }
-
-    if (!amount || typeof amount !== 'number' || amount <= 0) {
-      return res.status(400).json({ error: "'amount' doit être un nombre positif." });
-    }
-
-    // Création d'une session Stripe avec un produit "virtuel" et montant dynamique
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
-      line_items: [
-        {
-          price_data: {
-            currency: 'eur',
-            product_data: {
-              name: 'Paiement GameTrash',
-            },
-            unit_amount: Math.round(amount * 100), // montant en centimes
-          },
-          quantity: 1,
-        }
-      ],
+      line_items,
       success_url: 'https://mae97232.github.io/gametrash/index.html?payment=success',
       cancel_url: 'https://mae97232.github.io/gametrash/panier.html',
       customer_email: client.email,
@@ -226,7 +221,6 @@ app.post('/send-email', async (req, res) => {
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
-
 
 // ✅ Lancement serveur
 app.listen(4242, () => {
