@@ -139,28 +139,16 @@ app.post("/create-checkout-session", async (req, res) => {
     }));
 
     const session = await stripe.checkout.sessions.create({
-  payment_method_types: ['card'],
-  mode: 'payment',
-  line_items: [
-    {
-      price_data: {
-        currency: 'eur',
-        product_data: {
-          name: 'Paiement GameTrash',
-        },
-        unit_amount: 100,  // <-- fixe 1 euro en centimes ici
-      },
-      quantity: 1,
-    }
-  ],
-  success_url: 'https://mae97232.github.io/gametrash/index.html?payment=success',
-  cancel_url: 'https://mae97232.github.io/gametrash/panier.html',
-  customer_email: client.email,
-  shipping_address_collection: { allowed_countries: ['FR'] },
-  billing_address_collection: 'required',
-  phone_number_collection: { enabled: true },
-});
-
+      payment_method_types: ['card'],
+      mode: 'payment',
+      line_items,
+      success_url: 'https://mae97232.github.io/gametrash/index.html?payment=success',
+      cancel_url: 'https://mae97232.github.io/gametrash/panier.html',
+      customer_email: client.email,
+      shipping_address_collection: { allowed_countries: ['FR'] },
+      billing_address_collection: 'required',
+      phone_number_collection: { enabled: true },
+    });
 
     console.log("✅ Session Stripe créée :", session.id);
     res.json({ url: session.url });
