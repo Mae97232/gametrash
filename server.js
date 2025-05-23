@@ -22,12 +22,12 @@ mongoose.connect(process.env.MONGO_URI)
 const Order = require('./models/order');
 const User = require('./models/user');
 
-// ✅ PriceMap avec uniquement les produits actifs
+// ✅ Correspondance noms produits frontend ↔ Stripe Price ID
 const priceMap = {
-  "gameboy rouge": "price_1RREZoEL9cznbBHRbrCeYpXR",
-  "gameboy noir": "price_1RREcyEL9cznbBHRXZiSdGCE",
-  "gameboy orange": "price_1RREOuEL9cznbBHRrlyihpV4",
-  "gameboy violet": "price_1RREWjEL9cznbBHRICFULwO5"
+  "GameBoy Rouge": "price_1RREZoEL9cznbBHRbrCeYpXR",
+  "GameBoy Noir": "price_1RREcyEL9cznbBHRXZiSdGCE",
+  "GameBoy Orange": "price_1RREOuEL9cznbBHRrlyihpV4",
+  "GameBoy Violet": "price_1RREWjEL9cznbBHRICFULwO5"
 };
 
 // Middlewares
@@ -144,7 +144,7 @@ app.post("/create-checkout-session", async (req, res) => {
         throw new Error(`Item incomplet à l'index ${index}`);
       }
 
-      const nomProduit = item.nom.trim().toLowerCase();
+      const nomProduit = item.nom.trim(); // plus de .toLowerCase()
       const priceId = priceMap[nomProduit];
 
       if (!priceId) {
@@ -236,11 +236,12 @@ app.post('/send-email', async (req, res) => {
   }
 });
 
+// Page d’accueil
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'panier.html'));
 });
 
-// Démarrage serveur
+// ✅ Lancement serveur
 app.listen(4242, () => {
   console.log(`🚀 Serveur démarré sur http://localhost:4242`);
-})
+});
