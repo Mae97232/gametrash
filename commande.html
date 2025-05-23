@@ -10,14 +10,30 @@
 </head>
 <body>
 
-  <nav class="navbar">
-    <a href="index.html" class="logo">Game Trash</a>
-    <ul class="nav-links">
-      <li><a href="index.html">Accueil</a></li>
-      <li><a href="espace-mon-client.html"><i class="fas fa-user"></i> Espace client</a></li>
-      <li><a href="panier.html">🛒 Panier</a></li>
-    </ul>
-  </nav>
+  <!-- ✅ NAVBAR -->
+   <nav class="navbar">
+      <a href="index.html" class="logo-texte">
+         <img src="images/game2.png" alt="Logo Game Trash" class="logo-header" />
+         <div class="texte-header">
+            <h1>Game Trash</h1>
+            <span class="slogan">L'expert des GameBoy – La nostalgie au creux de vos mains</span>
+         </div>
+      </a>
+      <div class="menu-burger" onclick="toggleMenu(this)">
+         <div class="bar"></div>
+         <div class="bar"></div>
+         <div class="bar"></div>
+      </div>
+      <ul class="nav-links" id="navLinks">
+         <li><a href="index.html">Accueil</a></li>
+         <li><a href="produit.html">GameBoy Noire</a></li>
+         <li><a href="produit2.html">GameBoy Rouge</a></li>
+         <li><a href="produit3.html">GameBoy Orange</a></li>
+         <li><a href="produit4.html">GameBoy Violet</a></li>
+         <li><a href="panier.html">🛒 Panier <span id="panierCount">(0)</span></a></li>
+         <li><a href="espace-mon-client.html"><i class="fas fa-user"></i> Espace client</a></li>
+      </ul>
+   </nav>
 
   <main style="padding: 2rem;">
     <h1>Mes Commandes</h1>
@@ -31,6 +47,12 @@
   </footer>
 
   <script>
+      function toggleMenu(burger) {
+         burger.classList.toggle("active");
+         const nav = document.getElementById("navLinks");
+         nav.classList.toggle("show");
+      }
+
     document.addEventListener("DOMContentLoaded", function () {
       const utilisateur = JSON.parse(localStorage.getItem("utilisateurConnecte"));
       const commandes = JSON.parse(localStorage.getItem("commandes")) || [];
