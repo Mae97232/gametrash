@@ -182,13 +182,32 @@ h2 { font-size: 28px; }
 
 /* === Accueil === */
 #bienvenue {
-  background-image: url(../images/game2.png);
-  background-size: cover;
+  background-color: #000;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+                    url(../images/game1.png); /* Mets ici ton image GameBoy */
+  background-size: contain;
+  background-repeat: no-repeat;
   background-position: center;
   min-height: 90vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  text-align: center;
+  padding: 40px;
+  animation: fadeIn 1.5s ease-in-out;
+}
+
+/* Texte (si tu en mets dans cette section) */
+#bienvenue h1, #bienvenue p {
+  color: #fff;
+  text-shadow: 2px 2px 4px #000;
+  margin: 0;
+}
+
+/* Animation douce */
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 /* === Produits === */

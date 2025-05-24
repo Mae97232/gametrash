@@ -93,7 +93,6 @@
                 <ul>
                   <li><strong>Téléphone :</strong> ${utilisateur.telephone}</li>
                   <li><strong>Adresse :</strong> ${utilisateur.adresse}, ${utilisateur.ville}, ${utilisateur.codePostal}</li>
-                  <li><strong>Date de naissance :</strong> ${utilisateur.naissance}</li>
                 </ul>
                 <p>Nous avons hâte de vous faire découvrir nos meilleurs jeux rétro !</p>
                 <p>À très vite,<br><strong>L'équipe GameTrash</strong> 🎮</p>
@@ -104,8 +103,10 @@
 
         message.textContent = "Inscription réussie ! Un email vous a été envoyé.";
         message.style.color = "green";
+
+        // ✅ Redirection vers espace client avec ton nom de domaine personnalisé
         setTimeout(() => {
-          window.location.href = 'espace-mon-client.html';
+          window.location.href = 'https://www.gametrash.fr/espace-mon-client.html';
         }, 2000);
 
       } catch (error) {
